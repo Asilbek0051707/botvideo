@@ -1,0 +1,94 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ai-youtube-factory"
+version = "0.1.0"
+description = "Automated AI YouTube Shorts content factory: agents + GPU text-to-video render pipeline"
+requires-python = ">=3.11"
+dependencies = [
+  # --- API ---
+  "fastapi>=0.115",
+  "uvicorn[standard]>=0.30",
+  "pydantic>=2.7",
+  "pydantic-settings>=2.3",
+  "python-multipart>=0.0.9",
+  "jinja2>=3.1",
+  # --- DB ---
+  "sqlalchemy>=2.0",
+  "psycopg[binary]>=3.2",
+  "alembic>=1.13",
+  # --- Queue ---
+  "celery[redis]>=5.4",
+  "redis>=5.0",
+  # --- Clients ---
+  "httpx>=0.27",
+  "tenacity>=8.4",
+  "structlog>=24.1",
+  # --- AI providers (thin SDKs; safe to install everywhere) ---
+  "anthropic>=0.40",
+  "openai>=1.40",
+  # --- Storage ---
+  "boto3>=1.34",
+  "supabase>=2.6",
+  # --- Bot ---
+  "python-telegram-bot>=21.4",
+]
+
+[project.optional-dependencies]
+# CPU render worker (FFmpeg orchestration, image ops, mock T2V)
+render = [
+  "ffmpeg-python>=0.2",
+  "Pillow>=10.3",
+  "numpy>=1.26",
+  "imageio>=2.34",
+  "imageio-ffmpeg>=0.5",
+]
+# GPU text-to-video worker (RunPod / Vast.ai). Heavy — installed only in worker.gpu image.
+gpu = [
+  "torch>=2.3",
+  "diffusers>=0.32",       # LTXPipeline lands in 0.32
+  "transformers>=4.43",
+  "accelerate>=0.33",
+  "safetensors>=0.4",
+]
+dev = [
+  "pytest>=8.2",
+  "pytest-asyncio>=0.23",
+  "ruff>=0.5",
+  "mypy>=1.10",
+]
+
+[tool.setuptools]
+packages = [
+  "factory",
+  "factory.core",
+  "factory.db",
+  "factory.schemas",
+  "factory.agents",
+  "factory.prompts",
+  "factory.render",
+  "factory.render.providers",
+  "factory.storage",
+  "factory.services",
+  "backend",
+  "backend.app",
+  "backend.app.api",
+  "backend.app.api.routes",
+  "worker",
+  "telegram_bot",
+  "telegram_bot.handlers",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = ["E501"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]

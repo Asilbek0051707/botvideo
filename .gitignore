@@ -1,0 +1,46 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+service-account*.json
+
+# Data / artifacts
+/data/
+/storage/
+*.mp4
+*.wav
+*.mp3
+*.png
+*.jpg
+!docs/**/*.png
+!frontend/public/**
+
+# Logs
+*.log
+/logs/
+
+# Node / frontend
+node_modules/
+.next/
+out/
+.vercel/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

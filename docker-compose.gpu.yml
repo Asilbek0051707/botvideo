@@ -1,0 +1,39 @@
+# =============================================================================
+# GPU overlay — run alongside the base compose file:
+#   docker compose -f docker-compose.yml -f docker-compose.gpu.yml up -d
+#
+# Adds a CUDA worker that consumes ONLY the `gpu` queue and runs the real
+# text-to-video model. The base `worker` is narrowed to non-GPU queues so
+# heavy jobs are routed to the GPU box. Requires the NVIDIA Container Toolkit.
+# =============================================================================
+
+services:
+  # Base CPU worker no longer consumes the gpu queue when the overlay is active.
+  worker:
+    command: ["celery", "-A", "worker.celery_app.celery", "worker", "-Q", "default,render", "-l", "info", "--concurrency=2"]
+
+  worker-gpu:
+    build:
+      context: .
+      dockerfile: worker/Dockerfile.gpu
+    env_file: .env
+    restart: unless-stopped
+    command: ["celery", "-A", "worker.celery_app.celery", "worker", "-Q", "gpu", "-l", "info", "--concurrency=1", "--pool=solo"]
+    environment:
+      T2V_PROVIDER: gpu
+    depends_on:
+      redis:
+        condition: service_healthy
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    # Cache HuggingFace model weights across restarts
+    volumes:
+      - hfcache:/root/.cache/huggingface
+
+volumes:
+  hfcache:

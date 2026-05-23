@@ -1,0 +1,19 @@
+[Unit]
+Description=AI YouTube Factory (Docker Compose stack)
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/opt/factory
+ExecStartPre=/usr/bin/docker compose pull
+ExecStart=/usr/bin/docker compose --profile prod up -d
+ExecStop=/usr/bin/docker compose --profile prod down
+TimeoutStartSec=300
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

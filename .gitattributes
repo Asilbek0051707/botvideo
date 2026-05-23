@@ -1,0 +1,13 @@
+# Force LF line endings in the repo (Linux containers + bash scripts depend on it).
+* text=auto eol=lf
+
+# Binary files — let git auto-detect, don't normalize.
+*.png    binary
+*.jpg    binary
+*.jpeg   binary
+*.gif    binary
+*.ico    binary
+*.mp4    binary
+*.mp3    binary
+*.wav    binary
+*.pdf    binary

@@ -1,0 +1,25 @@
+# ---- AI YouTube Factory: GPU text-to-video worker (RunPod / Vast.ai) ----
+# Torch + CUDA come from the base image; we add ffmpeg + the diffusers stack.
+FROM pytorch/pytorch:2.3.1-cuda12.1-cudnn8-runtime
+
+ENV PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    HF_HOME=/root/.cache/huggingface
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        ffmpeg fonts-dejavu-core git \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY pyproject.toml README.md alembic.ini ./
+COPY factory ./factory
+COPY worker ./worker
+COPY backend ./backend
+COPY database ./database
+
+# torch is already present in the base image; pip will keep it and add the rest.
+RUN pip install --upgrade pip && pip install -e ".[render,gpu]"
+
+# Consumes only the GPU queue (overridden by docker-compose.gpu.yml).
+CMD ["celery", "-A", "worker.celery_app.celery", "worker", "-Q", "gpu", "-l", "info", "--concurrency=1", "--pool=solo"]
