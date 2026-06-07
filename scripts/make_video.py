@@ -13,22 +13,53 @@ Output: ./out/video.mp4 (plus thumbnail.jpg and captions.srt).
 from __future__ import annotations
 
 import os
+import re
 import shutil
+import subprocess
 import sys
 from pathlib import Path
 
 
-def _bootstrap_ffmpeg() -> None:
-    """Prepend a project-local static ffmpeg/ffprobe to PATH if present."""
-    vendor_root = Path(__file__).resolve().parent.parent / "vendor" / "ffmpeg"
-    if not vendor_root.is_dir():
-        return
-    for exe in vendor_root.rglob("ffmpeg.exe"):
-        os.environ["PATH"] = str(exe.parent) + os.pathsep + os.environ.get("PATH", "")
-        return
+def _bootstrap_ffmpeg() -> Path:
+    """Make `ffmpeg` resolvable on PATH and return its path.
+
+    Reuses a project-local static ffmpeg under vendor/ffmpeg/ when present;
+    otherwise falls back to imageio-ffmpeg's bundled binary (copied into
+    vendor/ so the rest of the pipeline can find it by name).
+    """
+    vendor_bin = Path(__file__).resolve().parent.parent / "vendor" / "ffmpeg" / "bin"
+    target = vendor_bin / "ffmpeg.exe"
+    if not target.exists():
+        import imageio_ffmpeg
+
+        src = Path(imageio_ffmpeg.get_ffmpeg_exe())
+        vendor_bin.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(src, target)
+    os.environ["PATH"] = str(vendor_bin) + os.pathsep + os.environ.get("PATH", "")
+    return target
 
 
-_bootstrap_ffmpeg()
+_FFMPEG = _bootstrap_ffmpeg()
+
+# ffprobe isn't bundled with imageio-ffmpeg. Replace probe_duration with a
+# pure-ffmpeg fallback so the render pipeline runs without a separate ffprobe.
+from factory.render import ffmpeg as _ff_mod  # noqa: E402
+
+_DUR_RE = re.compile(r"Duration:\s*(\d+):(\d+):(\d+(?:\.\d+)?)")
+
+
+def _probe_duration_via_ffmpeg(path) -> float:
+    proc = subprocess.run(
+        [str(_FFMPEG), "-i", str(path)], capture_output=True, text=True
+    )
+    m = _DUR_RE.search(proc.stderr or "")
+    if not m:
+        return 0.0
+    h, mn, s = m.groups()
+    return int(h) * 3600 + int(mn) * 60 + float(s)
+
+
+_ff_mod.probe_duration = _probe_duration_via_ffmpeg
 
 from factory.agents.schema import ContentPlan, Scene  # noqa: E402
 from factory.agents.voice_agent import VoiceAgent  # noqa: E402
