@@ -10,7 +10,7 @@ class Scene(BaseModel):
     narration: str = Field(..., description="What the voiceover says during this scene")
     visual_prompt: str = Field(..., description="Text-to-video prompt for this scene")
     on_screen_text: str = Field("", description="Caption / hook text burned on screen")
-    duration_sec: float = Field(..., ge=1.0, le=15.0)
+    duration_sec: float = Field(..., ge=1.0, le=300.0)
     motion: str = Field("slow push-in", description="Camera/motion hint for the T2V model")
 
 
