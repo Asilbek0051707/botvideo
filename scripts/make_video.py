@@ -18,7 +18,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-TOPIC = "building a business for future generations"
+TOPIC = "artificial intelligence"
 STYLE = "documentary"
 LANGUAGE = "en"
 
