@@ -1,9 +1,8 @@
-"""Standalone runner: hand-crafted Uzbek ContentPlan -> finished mp4 on disk.
+"""Standalone runner: topic -> finished mp4 on disk.
 
-Bypasses Celery/Postgres/Storage. Drives VoiceAgent + RenderPipeline directly
-with mock providers. Hand-crafted scenes are used (instead of script_agent) so
-we can produce Uzbek narration without an LLM API key — script_agent's mock
-fallback is English-only.
+Bypasses Celery/Postgres/Storage. Drives Orchestrator + VoiceAgent +
+RenderPipeline directly with mock providers so a video can be produced
+without bringing up the docker stack and without any API keys.
 
 Usage:
     python scripts/make_video.py
@@ -18,6 +17,10 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
+
+TOPIC = "building a business for future generations"
+STYLE = "documentary"
+LANGUAGE = "en"
 
 
 def _bootstrap_ffmpeg() -> Path:
@@ -61,50 +64,9 @@ def _probe_duration_via_ffmpeg(path) -> float:
 
 _ff_mod.probe_duration = _probe_duration_via_ffmpeg
 
-from factory.agents.schema import ContentPlan, Scene  # noqa: E402
+from factory.agents.orchestrator import Orchestrator  # noqa: E402
 from factory.agents.voice_agent import VoiceAgent  # noqa: E402
 from factory.render.pipeline import RenderPipeline  # noqa: E402
-
-
-def build_plan_uz() -> ContentPlan:
-    style = "documentary"
-    beats: list[tuple[str, str, str]] = [
-        ("Bugun qurgan biznesingiz — ertaga kelajak avlodga qoldiriladigan meros.",
-         "MEROS", "slow push-in"),
-        ("Pul emas, qadriyat qoldiring — bu eng katta investitsiya.",
-         "QADRIYAT", "drone reveal"),
-        ("Har bir farzand uchun yangi imkoniyat yaratish — ota-onaning vazifasi.",
-         "IMKONIYAT", "orbit"),
-        ("Sabr, halollik va o'zaro hurmat — bu bizning haqiqiy sarmoyamiz.",
-         "SARMOYA", "handheld"),
-        ("Kelajak biz qanday boshlaganimizdan emas, qanday tugatganimizdan iborat.",
-         "KELAJAK", "static"),
-    ]
-    scenes = [
-        Scene(
-            index=i,
-            narration=narr,
-            visual_prompt=(
-                f"cinematic {style} shot symbolizing legacy and future generations, "
-                "warm golden light, shallow depth of field, 9:16 vertical, 4k"
-            ),
-            on_screen_text=ost,
-            duration_sec=6.0,
-            motion=motion,
-        )
-        for i, (narr, ost, motion) in enumerate(beats)
-    ]
-    narration = " ".join(s.narration for s in scenes)
-    return ContentPlan(
-        title="Biznes va kelajak avlodlar",
-        description="Kelajak avlodlar uchun biznes qurish — qadriyat, sabr, halollik.",
-        tags=["biznes", "kelajak", "meros", "uzbek"],
-        hashtags=["#biznes", "#kelajak", "#oilaviy"],
-        style=style,
-        language="uz",
-        full_narration=narration,
-        scenes=scenes,
-    )
 
 
 def main() -> int:
@@ -115,7 +77,7 @@ def main() -> int:
         shutil.rmtree(workdir)
     workdir.mkdir()
 
-    plan = build_plan_uz()
+    plan = Orchestrator().build_plan(TOPIC, style=STYLE, language=LANGUAGE)
     print(f"plan: {plan.title}  ({len(plan.scenes)} scenes, {plan.total_duration}s)", flush=True)
 
     audio_bytes, ext = VoiceAgent().synthesize(
