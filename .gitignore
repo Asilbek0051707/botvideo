@@ -21,6 +21,8 @@ service-account*.json
 # Data / artifacts
 /data/
 /storage/
+/out/
+/vendor/
 *.mp4
 *.wav
 *.mp3
