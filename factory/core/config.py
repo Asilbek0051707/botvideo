@@ -82,7 +82,8 @@ class Settings(BaseSettings):
 
     # ---- Telegram ----
     telegram_bot_token: str | None = None
-    telegram_admin_ids: str = ""
+    admin_id: int | None = None              # single admin Telegram user ID
+    telegram_admin_ids: str = ""             # legacy comma-separated (kept for backwards compat)
     telegram_user_daily_limit: int = 5
 
     # ---- Misc ----
@@ -108,6 +109,8 @@ class Settings(BaseSettings):
     @property
     def admin_id_set(self) -> set[int]:
         out: set[int] = set()
+        if self.admin_id:
+            out.add(self.admin_id)
         for part in self.telegram_admin_ids.split(","):
             part = part.strip()
             if part.isdigit():

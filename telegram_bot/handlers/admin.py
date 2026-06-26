@@ -1,57 +1,54 @@
-"""Admin handlers: stats, recent jobs, cancel, retry. Gated by TELEGRAM_ADMIN_IDS."""
+"""Admin command handlers — /stats, /recent, /cancel, /retry.
+
+All commands are gated by the AdminOnlyMiddleware at the dispatcher level, so no
+per-handler admin check is needed here.
+"""
 
 from __future__ import annotations
 
 import asyncio
-import functools
 
-from telegram import Update
-from telegram.ext import ContextTypes
+from aiogram import Router
+from aiogram.filters import Command
+from aiogram.types import Message
 
-from factory.core.config import settings
 from telegram_bot import service
 
-
-def admin_only(handler):
-    @functools.wraps(handler)
-    async def wrapper(update: Update, context: ContextTypes.DEFAULT_TYPE):
-        if update.effective_user.id not in settings.admin_id_set:
-            await update.message.reply_text("⛔ Admins only.")
-            return
-        return await handler(update, context)
-
-    return wrapper
+router = Router(name="admin")
 
 
-@admin_only
-async def stats_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+@router.message(Command("stats"))
+async def cmd_stats(message: Message) -> None:
     data = await asyncio.to_thread(service.stats)
     if not data:
-        await update.message.reply_text("No jobs yet.")
+        await message.answer("No jobs yet.")
         return
     lines = "\n".join(f"{k:10} {v}" for k, v in sorted(data.items()))
-    await update.message.reply_html(f"📊 <b>Jobs by status</b>\n<pre>{lines}</pre>")
+    await message.answer(f"📊 <b>Jobs by status</b>\n<pre>{lines}</pre>")
 
 
-@admin_only
-async def recent_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+@router.message(Command("recent"))
+async def cmd_recent(message: Message) -> None:
     rows = await asyncio.to_thread(service.recent, 8)
-    await update.message.reply_html("🕒 <b>Recent</b>\n<pre>" + ("\n".join(rows) or "none") + "</pre>")
+    body = "\n".join(rows) if rows else "none"
+    await message.answer(f"🕒 <b>Recent jobs</b>\n<pre>{body}</pre>")
 
 
-@admin_only
-async def cancel_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    if not context.args:
-        await update.message.reply_text("Usage: /cancel <job_id>")
+@router.message(Command("cancel"))
+async def cmd_cancel(message: Message) -> None:
+    args = message.text.split(maxsplit=1) if message.text else []
+    if len(args) < 2:
+        await message.answer("Usage: /cancel &lt;job_id&gt;")
         return
-    ok = await asyncio.to_thread(service.cancel, context.args[0])
-    await update.message.reply_text("✅ Canceled." if ok else "Couldn't cancel that job.")
+    ok = await asyncio.to_thread(service.cancel, args[1].strip())
+    await message.answer("✅ Canceled." if ok else "Couldn't cancel that job.")
 
 
-@admin_only
-async def retry_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    if not context.args:
-        await update.message.reply_text("Usage: /retry <job_id>")
+@router.message(Command("retry"))
+async def cmd_retry(message: Message) -> None:
+    args = message.text.split(maxsplit=1) if message.text else []
+    if len(args) < 2:
+        await message.answer("Usage: /retry &lt;job_id&gt;")
         return
-    ok = await asyncio.to_thread(service.retry, context.args[0])
-    await update.message.reply_text("🔁 Requeued." if ok else "Couldn't requeue that job.")
+    ok = await asyncio.to_thread(service.retry, args[1].strip())
+    await message.answer("🔁 Requeued." if ok else "Couldn't requeue that job.")
