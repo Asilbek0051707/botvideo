@@ -11,7 +11,7 @@
     "REDIS_URL": "${{ Redis.REDIS_URL }}",
     "CELERY_BROKER_URL": "${{ Redis.REDIS_URL }}/1",
     "CELERY_RESULT_BACKEND": "${{ Redis.REDIS_URL }}/2",
-    "TELEGRAM_BOT_TOKEN": "set-me",
-    "TELEGRAM_ADMIN_IDS": "set-comma-separated-ids"
+    "TELEGRAM_BOT_TOKEN": "set-in-railway-dashboard",
+    "ADMIN_ID": "set-in-railway-dashboard"
   }
 }
