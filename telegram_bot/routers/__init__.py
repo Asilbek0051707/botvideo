@@ -9,8 +9,10 @@ from telegram_bot.routers import (
     channel_analyzer,
     dashboard,
     materials,
+    projects,
     settings_router,
     start,
+    statistics,
     trend_analyzer,
     trends,
 )
@@ -25,4 +27,6 @@ def register_routers(dp: Dispatcher) -> None:
     dp.include_router(trend_analyzer.router)
     dp.include_router(channel_analyzer.router)
     dp.include_router(ai_generator.router)
+    dp.include_router(projects.router)
+    dp.include_router(statistics.router)
     dp.include_router(settings_router.router)

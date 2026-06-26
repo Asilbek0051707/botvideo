@@ -34,6 +34,7 @@ dependencies = [
   "supabase>=2.6",
   # --- Bot ---
   "aiogram>=3.13",
+  "psutil>=5.9",
 ]
 
 [project.optional-dependencies]
