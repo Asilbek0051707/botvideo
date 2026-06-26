@@ -1,0 +1,14 @@
+{
+  "ideas": [
+    {"title": "{character} vs EVERYONE", "description": "{character} battles every character in {category} one by one"},
+    {"title": "{character} Evolution 1990–2024", "description": "Show how {character} changed over the years"},
+    {"title": "{character} Color Challenge", "description": "{character} transforms through every color of the rainbow"},
+    {"title": "What if {character} was EVIL?", "description": "Dark alternate version of {character}"},
+    {"title": "Guess the Real {character}", "description": "Multiple fake versions — pick the real one"},
+    {"title": "{character} Impossible Parkour", "description": "{character} navigates an impossible obstacle course"},
+    {"title": "{character} Survival Challenge", "description": "{character} must survive 100 days in {category}"},
+    {"title": "{character} Funny Moments Compilation", "description": "Best funny clips of {character} in {category}"},
+    {"title": "{character} Baby vs Adult", "description": "Compare baby {character} vs grown-up version"},
+    {"title": "{character} Strongest Power Level", "description": "How powerful is {character}? Ranked and explained"}
+  ]
+}

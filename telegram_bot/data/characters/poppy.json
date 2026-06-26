@@ -1,0 +1,11 @@
+{"category_id":"poppy","name":"Poppy Playtime","icon":"🧸","characters":[
+{"id":"huggy_wuggy","name":"Huggy Wuggy","aliases":["Blue Monster","Huggy","Singing Huggy"],"tags":["monster","blue","main"]},
+{"id":"kissy_missy","name":"Kissy Missy","aliases":["Pink Huggy","Female Huggy","Kissy"],"tags":["monster","pink","anti-hero"]},
+{"id":"poppy","name":"Poppy","aliases":["Poppy Doll","The Poppy","Main Character"],"tags":["doll","main","mystery"]},
+{"id":"mommy_long_legs","name":"Mommy Long Legs","aliases":["Pink Spider","Chapter 2 Boss","Stretchy Legs"],"tags":["villain","boss","chapter2"]},
+{"id":"bron","name":"Bron","aliases":["Blue Dinosaur","Friendly Bron","Dino Toy"],"tags":["toy","friendly","dinosaur"]},
+{"id":"bunzo_bunny","name":"Bunzo Bunny","aliases":["Cymbals Bunny","Game Song Bunny","Music Rabbit"],"tags":["toy","scary","music"]},
+{"id":"catnap","name":"CatNap","aliases":["Purple Cat","Smiling Critters","Chapter 3 Boss"],"tags":["villain","boss","chapter3","cat"]},
+{"id":"dogday","name":"DogDay","aliases":["Smiling Critters Dog","Sun Dog","Happy Critter"],"tags":["toy","smiling-critters","dog"]},
+{"id":"craftycorn","name":"CraftyCorn","aliases":["Rainbow Unicorn","Smiling Critters","Colorful Unicorn"],"tags":["toy","smiling-critters","unicorn"]}
+]}

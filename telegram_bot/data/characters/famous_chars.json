@@ -1,0 +1,14 @@
+{"category_id":"famous_chars","name":"Famous Characters","icon":"🎭","characters":[
+{"id":"among_us","name":"Among Us Crewmate","aliases":["Crewmate","Sus","Impostor","Among Us"],"tags":["game","viral","meme"]},
+{"id":"minecraft_steve","name":"Minecraft Steve","aliases":["Steve","Minecraft Player"],"tags":["game","iconic"]},
+{"id":"roblox_noob","name":"Roblox Noob","aliases":["Yellow Noob","Classic Roblox"],"tags":["game","iconic"]},
+{"id":"pikachu","name":"Pikachu","aliases":["Electric Mouse","Pika","Pokemon Mascot"],"tags":["pokemon","cute","iconic"]},
+{"id":"goku","name":"Goku SSJ","aliases":["Super Saiyan Goku","Blonde Goku"],"tags":["anime","powerful","iconic"]},
+{"id":"naruto_sage","name":"Naruto Sage","aliases":["Sage Mode","Orange Ninja"],"tags":["anime","sage","iconic"]},
+{"id":"spongebob","name":"SpongeBob","aliases":["Sponge Bob","Yellow Sponge","Bikini Bottom"],"tags":["cartoon","funny","iconic"]},
+{"id":"patrick","name":"Patrick Star","aliases":["Dumb Star","Pink Starfish","SpongeBob's Friend"],"tags":["cartoon","funny","iconic"]},
+{"id":"peppa_pig","name":"Peppa Pig","aliases":["Pink Pig","Daddy Pig's Daughter"],"tags":["cartoon","kids","iconic"]},
+{"id":"ben_10","name":"Ben 10","aliases":["Ben Tennyson","Omnitrix","Hero Watch"],"tags":["cartoon","hero","iconic"]},
+{"id":"ryan","name":"Ryan's World","aliases":["Ryan Kaji","Toy Review Kid"],"tags":["youtube","kids","toy"]},
+{"id":"mr_beast","name":"MrBeast","aliases":["Jimmy Donaldson","Philanthropist YouTube"],"tags":["youtube","famous","creator"]}
+]}

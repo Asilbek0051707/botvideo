@@ -1,0 +1,15 @@
+{"category_id":"mario","name":"Mario","icon":"🍄","characters":[
+{"id":"mario","name":"Mario","aliases":["Super Mario","It's-a-me Mario","Red Plumber"],"tags":["hero","plumber","iconic"]},
+{"id":"luigi","name":"Luigi","aliases":["Green Mario","Luigi Scared","Taller Brother"],"tags":["hero","plumber","green"]},
+{"id":"peach","name":"Princess Peach","aliases":["Princess Toadstool","Peach","Pink Princess"],"tags":["princess","pink","rescued"]},
+{"id":"bowser","name":"Bowser","aliases":["King Koopa","Big Bad Boss","Koopa King"],"tags":["villain","king","powerful"]},
+{"id":"yoshi","name":"Yoshi","aliases":["Green Dinosaur","Tongue Attack","Egg Thrower"],"tags":["dino","green","helpful"]},
+{"id":"toad","name":"Toad","aliases":["Mushroom Kid","Blue Vest Toad","Mushroom Retainer"],"tags":["helper","mushroom","cute"]},
+{"id":"rosalina","name":"Rosalina","aliases":["Galaxy Queen","Luma Keeper","Star Observatory"],"tags":["princess","galaxy","powerful"]},
+{"id":"waluigi","name":"Waluigi","aliases":["Tall Bad Luigi","WA","Anti-Luigi"],"tags":["villain","funny","underrated"]},
+{"id":"wario","name":"Wario","aliases":["Fat Mario","Yellow Anti-Mario","Garlic Lover"],"tags":["villain","funny","greedy"]},
+{"id":"donkey_kong","name":"Donkey Kong","aliases":["DK","Tie Monkey","Barrel Thrower"],"tags":["hero","ape","strong"]},
+{"id":"bowser_jr","name":"Bowser Jr.","aliases":["Baby Bowser Jr.","Mini Bowser"],"tags":["villain","kid","shell"]},
+{"id":"koopa","name":"Koopa Troopa","aliases":["Shell Guy","Green Koopa","Shell Kick"],"tags":["villain","minion","shell"]},
+{"id":"kamek","name":"Kamek","aliases":["Koopa Wizard","Magikoopa","Evil Witch"],"tags":["villain","magic","advisor"]}
+]}

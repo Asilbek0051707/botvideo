@@ -1,0 +1,28 @@
+{
+  "categories": [
+    {"id": "tiles_hop",    "name": "Tiles Hop",              "icon": "🎮", "callback": "trends:tiles_hop"},
+    {"id": "famous_chars", "name": "Famous Characters",       "icon": "🎭", "callback": "trends:famous_chars"},
+    {"id": "sprunki",      "name": "Sprunki",                 "icon": "🧩", "callback": "trends:sprunki"},
+    {"id": "char_evo",     "name": "Character Evolution",     "icon": "📈", "callback": "trends:char_evo"},
+    {"id": "char_vs",      "name": "Character VS Character",  "icon": "⚔",  "callback": "trends:char_vs"},
+    {"id": "geometry",     "name": "Geometry Dash",           "icon": "🔷", "callback": "trends:geometry"},
+    {"id": "subway",       "name": "Subway Surfers",          "icon": "🚇", "callback": "trends:subway"},
+    {"id": "minecraft",    "name": "Minecraft Parkour",       "icon": "⛏",  "callback": "trends:minecraft"},
+    {"id": "ai_stories",   "name": "AI Stories",              "icon": "🎙", "callback": "trends:ai_stories"},
+    {"id": "guess",        "name": "Guess Character",         "icon": "❓", "callback": "trends:guess"},
+    {"id": "horror",       "name": "Horror EXE",              "icon": "👹", "callback": "trends:horror"},
+    {"id": "marvel",       "name": "Marvel",                  "icon": "🦸", "callback": "trends:marvel"},
+    {"id": "dc",           "name": "DC",                      "icon": "🦇", "callback": "trends:dc"},
+    {"id": "disney",       "name": "Disney",                  "icon": "🏰", "callback": "trends:disney"},
+    {"id": "anime",        "name": "Anime",                   "icon": "🎌", "callback": "trends:anime"},
+    {"id": "roblox",       "name": "Roblox",                  "icon": "🟩", "callback": "trends:roblox"},
+    {"id": "sonic",        "name": "Sonic",                   "icon": "🦔", "callback": "trends:sonic"},
+    {"id": "mario",        "name": "Mario",                   "icon": "🍄", "callback": "trends:mario"},
+    {"id": "paw_patrol",   "name": "Paw Patrol",              "icon": "🐶", "callback": "trends:paw_patrol"},
+    {"id": "bluey",        "name": "Bluey",                   "icon": "🔵", "callback": "trends:bluey"},
+    {"id": "skibidi",      "name": "Skibidi Toilet",          "icon": "🚽", "callback": "trends:skibidi"},
+    {"id": "poppy",        "name": "Poppy Playtime",          "icon": "🧸", "callback": "trends:poppy"},
+    {"id": "rainbow",      "name": "Rainbow Friends",         "icon": "🌈", "callback": "trends:rainbow"},
+    {"id": "circus",       "name": "Amazing Digital Circus",  "icon": "🎪", "callback": "trends:circus"}
+  ]
+}

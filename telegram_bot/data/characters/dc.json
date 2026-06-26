@@ -1,0 +1,17 @@
+{"category_id":"dc","name":"DC","icon":"🦇","characters":[
+{"id":"batman","name":"Batman","aliases":["Bruce Wayne","Dark Knight","Caped Crusader"],"tags":["hero","dark","detective"]},
+{"id":"superman","name":"Superman","aliases":["Clark Kent","Man of Steel","Kal-El"],"tags":["hero","powerful","kryptonian"]},
+{"id":"wonder_woman","name":"Wonder Woman","aliases":["Diana Prince","Amazonian Warrior"],"tags":["hero","warrior","amazon"]},
+{"id":"the_flash","name":"The Flash","aliases":["Barry Allen","Fastest Man Alive"],"tags":["hero","speed","red"]},
+{"id":"aquaman","name":"Aquaman","aliases":["Arthur Curry","King of Atlantis"],"tags":["hero","ocean","king"]},
+{"id":"green_lantern","name":"Green Lantern","aliases":["Hal Jordan","Ring Slinger"],"tags":["hero","cosmic","ring"]},
+{"id":"joker","name":"Joker","aliases":["Clown Prince of Crime","Ha Ha Ha"],"tags":["villain","chaos","clown"]},
+{"id":"harley_quinn","name":"Harley Quinn","aliases":["Dr. Harleen Quinzel","Jester"],"tags":["villain","anti-hero","funny"]},
+{"id":"lex_luthor","name":"Lex Luthor","aliases":["Alexander Luthor","Bald Villain"],"tags":["villain","smart","rich"]},
+{"id":"catwoman","name":"Catwoman","aliases":["Selina Kyle","Cat Burglar"],"tags":["anti-hero","thief","cat"]},
+{"id":"nightwing","name":"Nightwing","aliases":["Dick Grayson","First Robin"],"tags":["hero","acrobat","former-robin"]},
+{"id":"shazam","name":"Shazam","aliases":["Billy Batson","Captain Marvel"],"tags":["hero","magic","kid"]},
+{"id":"cyborg","name":"Cyborg","aliases":["Victor Stone","Half Robot"],"tags":["hero","tech","teen"]},
+{"id":"deathstroke","name":"Deathstroke","aliases":["Slade Wilson","Mercenary"],"tags":["villain","mercenary","skilled"]},
+{"id":"martian_manhunter","name":"Martian Manhunter","aliases":["J'onn J'onzz","Green Martian"],"tags":["hero","alien","justice-league"]}
+]}

@@ -1,0 +1,10 @@
+{"category_id":"skibidi","name":"Skibidi Toilet","icon":"🚽","characters":[
+{"id":"skibidi_toilet","name":"Skibidi Toilet","aliases":["Original Skibidi","Singing Toilet","DaFuq!?Boom!"],"tags":["main","villain","toilet"]},
+{"id":"camera_man","name":"CameraMan","aliases":["Camera Head","Alliance Hero","Camera Body"],"tags":["hero","alliance","camera"]},
+{"id":"tv_man","name":"TV Man","aliases":["TV Head","Screen Face","Television Guy"],"tags":["hero","alliance","tv"]},
+{"id":"speaker_man","name":"SpeakerMan","aliases":["Speaker Head","Sound Guy","Bass Cannon"],"tags":["hero","alliance","speaker"]},
+{"id":"g_man","name":"G-Man","aliases":["Giant Skibidi","Boss Toilet","Large Skibidi"],"tags":["villain","boss","giant"]},
+{"id":"titan_camera","name":"Titan CameraMan","aliases":["Huge Camera Man","Titan Alliance","Big Camera"],"tags":["hero","titan","powerful"]},
+{"id":"titan_speaker","name":"Titan SpeakerMan","aliases":["Huge Speaker Man","Boss Alliance"],"tags":["hero","titan","powerful"]},
+{"id":"upgraded_skibidi","name":"Upgraded Skibidi","aliases":["Mech Toilet","Robot Skibidi","Enhanced Toilet"],"tags":["villain","upgrade","mech"]}
+]}

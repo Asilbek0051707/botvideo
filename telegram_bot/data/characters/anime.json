@@ -1,0 +1,17 @@
+{"category_id":"anime","name":"Anime","icon":"🎌","characters":[
+{"id":"naruto","name":"Naruto","aliases":["Naruto Uzumaki","Nine-Tails","Believe It"],"tags":["shonen","ninja","hero"]},
+{"id":"sasuke","name":"Sasuke","aliases":["Sasuke Uchiha","Avenger","Sharingan"],"tags":["shonen","ninja","rival"]},
+{"id":"goku","name":"Goku","aliases":["Kakarot","Son Goku","Super Saiyan"],"tags":["shonen","saiyan","powerful"]},
+{"id":"vegeta","name":"Vegeta","aliases":["Prince Vegeta","Saiyan Prince","It's Over 9000"],"tags":["shonen","saiyan","rival"]},
+{"id":"luffy","name":"Luffy","aliases":["Monkey D. Luffy","Straw Hat","Rubber Man"],"tags":["shonen","pirate","hero"]},
+{"id":"zoro","name":"Zoro","aliases":["Roronoa Zoro","Three Sword","Lost Navigator"],"tags":["shonen","swordsman","hero"]},
+{"id":"pikachu","name":"Pikachu","aliases":["Pika Pika","Electric Mouse","Ash's Pikachu"],"tags":["pokemon","electric","cute"]},
+{"id":"gojo","name":"Gojo","aliases":["Satoru Gojo","Six Eyes","Infinity User"],"tags":["jjk","powerful","teacher"]},
+{"id":"tanjiro","name":"Tanjiro","aliases":["Tanjiro Kamado","Demon Slayer","Sun Breathing"],"tags":["demon-slayer","hero","kind"]},
+{"id":"nezuko","name":"Nezuko","aliases":["Nezuko Kamado","Demon Sister","Bamboo Mouth"],"tags":["demon-slayer","demon","cute"]},
+{"id":"deku","name":"Deku","aliases":["Izuku Midoriya","One for All","Plus Ultra"],"tags":["mha","hero","quirkless"]},
+{"id":"all_might","name":"All Might","aliases":["Symbol of Peace","Toshinori Yagi","Plus Ultra"],"tags":["mha","hero","iconic"]},
+{"id":"levi","name":"Levi","aliases":["Captain Levi","Humanity's Strongest","AOT"],"tags":["aot","soldier","clean"]},
+{"id":"light","name":"Light Yagami","aliases":["Kira","Death Note User","L's rival"],"tags":["death-note","villain","smart"]},
+{"id":"saitama","name":"Saitama","aliases":["One Punch Man","Bald Hero","Caped Baldy"],"tags":["opm","hero","overpowered"]}
+]}

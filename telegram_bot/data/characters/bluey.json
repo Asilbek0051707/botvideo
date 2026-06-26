@@ -1,0 +1,11 @@
+{"category_id":"bluey","name":"Bluey","icon":"🔵","characters":[
+{"id":"bluey","name":"Bluey","aliases":["Blue Heeler Pup","Imaginative One","Main Character"],"tags":["main","playful","creative"]},
+{"id":"bingo","name":"Bingo","aliases":["Red Heeler Pup","Little Sister","Sensitive One"],"tags":["sister","sweet","smaller"]},
+{"id":"bandit","name":"Bandit","aliases":["Dad","Bandit Heeler","Cool Dad"],"tags":["dad","funny","heeler"]},
+{"id":"chilli","name":"Chilli","aliases":["Mum","Chilli Heeler","Red Mum"],"tags":["mum","caring","heeler"]},
+{"id":"jack","name":"Jack","aliases":["Bluey's Friend","Tiny Jack","Jack Russell"],"tags":["friend","fast","small"]},
+{"id":"judo","name":"Judo","aliases":["Bluey's Friend","Japanese Pup","Judo Uniform"],"tags":["friend","cool","shiba-mix"]},
+{"id":"mackenzie","name":"Mackenzie","aliases":["Border Collie","Bluey's Friend"],"tags":["friend","border-collie"]},
+{"id":"calypso","name":"Calypso","aliases":["Calypso Teacher","Wise Pup","Childcare Lady"],"tags":["teacher","wise","calm"]},
+{"id":"nana","name":"Nana","aliases":["Grandma","Bluey's Grandma","Nana Heeler"],"tags":["grandma","elder","classic"]}
+]}

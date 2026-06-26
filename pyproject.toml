@@ -85,6 +85,9 @@ packages = [
   "telegram_bot.keyboards",
   "telegram_bot.routers",
   "telegram_bot.utils",
+  "telegram_bot.services",
+  "telegram_bot.services.providers",
+  "telegram_bot.db",
 ]
 
 [tool.ruff]

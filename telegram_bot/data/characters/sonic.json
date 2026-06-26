@@ -1,0 +1,14 @@
+{"category_id":"sonic","name":"Sonic","icon":"🦔","characters":[
+{"id":"sonic","name":"Sonic","aliases":["Sonic the Hedgehog","Blue Blur","Speed Demon"],"tags":["hero","fast","blue"]},
+{"id":"tails","name":"Tails","aliases":["Miles Prower","Twin Tails","Fox"],"tags":["hero","fox","smart"]},
+{"id":"knuckles","name":"Knuckles","aliases":["Echidna","Red Punch","Guardian"],"tags":["hero","strong","red"]},
+{"id":"amy_rose","name":"Amy Rose","aliases":["Pink Hedgehog","Hammer Girl"],"tags":["hero","girl","pink"]},
+{"id":"shadow","name":"Shadow","aliases":["Ultimate Life Form","Shadow the Hedgehog","Black Blur"],"tags":["anti-hero","dark","powerful"]},
+{"id":"silver","name":"Silver","aliases":["Silver the Hedgehog","Future Hedgehog","Telekinetic"],"tags":["hero","future","psychic"]},
+{"id":"blaze","name":"Blaze","aliases":["Blaze the Cat","Flame Princess","Sol Dimension"],"tags":["hero","fire","princess"]},
+{"id":"rouge","name":"Rouge","aliases":["Rouge the Bat","Jewel Thief","Bat"],"tags":["anti-hero","spy","bat"]},
+{"id":"eggman","name":"Dr. Eggman","aliases":["Dr. Robotnik","Eggy","Evil Genius"],"tags":["villain","genius","robot"]},
+{"id":"metal_sonic","name":"Metal Sonic","aliases":["Robo Sonic","Machine Copy"],"tags":["villain","robot","speed"]},
+{"id":"espio","name":"Espio","aliases":["Ninja Chameleon","Team Chaotix"],"tags":["hero","ninja","chameleon"]},
+{"id":"cream","name":"Cream","aliases":["Cream the Rabbit","Cheese Chao","Gentle Rabbit"],"tags":["hero","girl","innocent"]}
+]}

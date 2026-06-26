@@ -1,0 +1,12 @@
+{"category_id":"roblox","name":"Roblox","icon":"🟩","characters":[
+{"id":"noob","name":"Noob","aliases":["Classic Noob","Yellow Robloxian","1x1x1x1"],"tags":["classic","beginner","yellow"]},
+{"id":"guest","name":"Guest","aliases":["Guest 666","Classic Guest","No Hat Guest"],"tags":["classic","mystery","removed"]},
+{"id":"bacon","name":"Bacon Hair","aliases":["Bacon Boy","Free Hair Noob"],"tags":["classic","beginner","bacon"]},
+{"id":"builderman","name":"Builderman","aliases":["Roblox Admin","Staff Member"],"tags":["admin","official","classic"]},
+{"id":"john_doe","name":"John Doe","aliases":["Mystery Account","Hacker Myth","March 18"],"tags":["creepypasta","mystery","banned"]},
+{"id":"korblox","name":"Korblox","aliases":["Korblox Deathspeaker","Ice Army","Undead Warrior"],"tags":["premium","warrior","ice"]},
+{"id":"headless","name":"Headless Horseman","aliases":["Headless","No Head Robloxian"],"tags":["premium","halloween","scary"]},
+{"id":"piggy","name":"Piggy","aliases":["Peppa's Cousin","Piggy Game","Horror Pig"],"tags":["game","horror","popular"]},
+{"id":"doors_figure","name":"Figure","aliases":["Doors Monster","Library Monster","Blind Seeker"],"tags":["doors","horror","monster"]},
+{"id":"murder","name":"Murderer","aliases":["MM2 Murderer","Murder Mystery","Knife Killer"],"tags":["mm2","villain","knife"]}
+]}

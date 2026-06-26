@@ -1,0 +1,22 @@
+{"category_id":"disney","name":"Disney","icon":"🏰","characters":[
+{"id":"elsa","name":"Elsa","aliases":["Ice Queen","Frozen","Let It Go"],"tags":["princess","frozen","magic"]},
+{"id":"anna","name":"Anna","aliases":["Princess Anna","Frozen"],"tags":["princess","frozen"]},
+{"id":"olaf","name":"Olaf","aliases":["Snowman","Frozen"],"tags":["funny","frozen","snowman"]},
+{"id":"moana","name":"Moana","aliases":["Moana Waialiki","Pacific Princess"],"tags":["princess","ocean"]},
+{"id":"stitch","name":"Stitch","aliases":["Experiment 626","Blue Alien"],"tags":["alien","cute","funny"]},
+{"id":"rapunzel","name":"Rapunzel","aliases":["Blondie","Tangled"],"tags":["princess","magic","hair"]},
+{"id":"buzz_lightyear","name":"Buzz Lightyear","aliases":["Space Ranger","Toy Story"],"tags":["toy","space"]},
+{"id":"woody","name":"Woody","aliases":["Sheriff Woody","Toy Story"],"tags":["toy","cowboy"]},
+{"id":"simba","name":"Simba","aliases":["Lion King","Mufasa son"],"tags":["lion","king","circle of life"]},
+{"id":"nemo","name":"Nemo","aliases":["Little Clownfish","Finding Nemo"],"tags":["fish","ocean"]},
+{"id":"mickey","name":"Mickey Mouse","aliases":["Mickey","Walt Disney Icon"],"tags":["icon","classic","mouse"]},
+{"id":"baymax","name":"Baymax","aliases":["Big Hero 6","White Robot"],"tags":["robot","hero","cute"]},
+{"id":"aladdin","name":"Aladdin","aliases":["Street Rat","Agrabah"],"tags":["hero","magic","lamp"]},
+{"id":"jasmine","name":"Jasmine","aliases":["Princess Jasmine","Agrabah"],"tags":["princess","magic"]},
+{"id":"ariel","name":"Ariel","aliases":["Little Mermaid","Red Hair Mermaid"],"tags":["mermaid","princess","ocean"]},
+{"id":"belle","name":"Belle","aliases":["Beauty","Beauty and the Beast"],"tags":["princess","smart"]},
+{"id":"mulan","name":"Mulan","aliases":["Hua Mulan","Warrior Princess"],"tags":["princess","warrior"]},
+{"id":"jack_sparrow","name":"Jack Sparrow","aliases":["Captain Jack","Pirates"],"tags":["pirate","funny"]},
+{"id":"wall_e","name":"WALL-E","aliases":["Waste Robot","WALL-E movie"],"tags":["robot","cute","space"]},
+{"id":"genie","name":"Genie","aliases":["Blue Genie","Aladdin Genie"],"tags":["magic","funny","powerful"]}
+]}

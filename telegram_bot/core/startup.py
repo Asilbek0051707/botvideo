@@ -11,6 +11,14 @@ log = get_logger("telegram.lifecycle")
 
 
 async def on_startup(bot: Bot) -> None:
+    # Init bot-local SQLite database (creates tables if they don't exist)
+    try:
+        from telegram_bot.db.session import init_db
+        init_db()
+        log.info("telegram.db_ready")
+    except Exception as exc:
+        log.warning("telegram.db_init_failed", error=str(exc))
+
     me = await bot.get_me()
     log.info(
         "telegram.started",

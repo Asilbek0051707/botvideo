@@ -1,0 +1,12 @@
+{"category_id":"horror","name":"Horror EXE","icon":"👹","characters":[
+{"id":"sonic_exe","name":"Sonic.EXE","aliases":["Evil Sonic","Red Eyes Sonic","Sonic Horror"],"tags":["horror","dark","evil"]},
+{"id":"mario_exe","name":"Mario.EXE","aliases":["Evil Mario","Blood Mario","Dark Mario"],"tags":["horror","dark","evil"]},
+{"id":"tails_doll","name":"Tails Doll","aliases":["Possessed Tails","Floating Doll","Gem Antenna"],"tags":["horror","creepypasta","doll"]},
+{"id":"ben_drowned","name":"BEN Drowned","aliases":["Haunted Majora","You've met with a terrible fate"],"tags":["horror","zelda","creepypasta"]},
+{"id":"herobrine","name":"Herobrine","aliases":["Minecraft Ghost","White Eyes","Notch's Brother"],"tags":["horror","minecraft","creepypasta"]},
+{"id":"lost_silver","name":"Lost Silver","aliases":["Haunted Pokemon","Dead Silver","Ghost Pokémon"],"tags":["horror","pokemon","creepypasta"]},
+{"id":"smile_dog","name":"Smile Dog","aliases":["Spread the Word","Creepy Dog Image"],"tags":["horror","dog","creepypasta"]},
+{"id":"huggy_exe","name":"Huggy.EXE","aliases":["Evil Huggy","Horror Wuggy","Dark Huggy"],"tags":["horror","poppy","dark"]},
+{"id":"mickey_exe","name":"Mickey.EXE","aliases":["Suicide Mouse","Evil Mickey","Creepy Mickey"],"tags":["horror","disney","creepypasta"]},
+{"id":"baldi_exe","name":"BALDI","aliases":["Baldi's Basics","Math Teacher Horror","Ruler Man"],"tags":["horror","game","indie"]}
+]}

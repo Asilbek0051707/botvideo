@@ -1,4 +1,4 @@
-"""Router registry — all feature routers are imported and included here."""
+"""Router registry — all feature routers registered here."""
 
 from __future__ import annotations
 
@@ -7,9 +7,12 @@ from aiogram import Dispatcher
 from telegram_bot.routers import (
     ai_generator,
     channel_analyzer,
+    characters,
     dashboard,
+    favorites,
     materials,
     projects,
+    search_router,
     settings_router,
     start,
     statistics,
@@ -23,6 +26,7 @@ def register_routers(dp: Dispatcher) -> None:
     dp.include_router(start.router)
     dp.include_router(dashboard.router)
     dp.include_router(trends.router)
+    dp.include_router(characters.router)
     dp.include_router(materials.router)
     dp.include_router(trend_analyzer.router)
     dp.include_router(channel_analyzer.router)
@@ -30,3 +34,5 @@ def register_routers(dp: Dispatcher) -> None:
     dp.include_router(projects.router)
     dp.include_router(statistics.router)
     dp.include_router(settings_router.router)
+    dp.include_router(favorites.router)
+    dp.include_router(search_router.router)

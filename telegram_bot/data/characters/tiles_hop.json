@@ -1,0 +1,12 @@
+{"category_id":"tiles_hop","name":"Tiles Hop","icon":"🎮","characters":[
+{"id":"impossible_game","name":"Impossible Game","aliases":["Neon Runner","Impossible Tiles"],"tags":["hard","neon","classic"]},
+{"id":"geometry_mode","name":"Geometry Mode","aliases":["Cube Run","Geometry Tiles"],"tags":["geometry","squares","hard"]},
+{"id":"anime_mode","name":"Anime Tiles","aliases":["Anime Soundtrack","Anime Music Run"],"tags":["anime","music","popular"]},
+{"id":"kpop_mode","name":"K-Pop Mode","aliases":["K-Pop Tiles","BTS Run","K-Pop Music"],"tags":["kpop","music","trending"]},
+{"id":"minecraft_tiles","name":"Minecraft Tiles","aliases":["Minecraft Music","Wet Hands Run"],"tags":["minecraft","music","calm"]},
+{"id":"among_us_tiles","name":"Among Us Tiles","aliases":["Crewmate Run","Impostor Music"],"tags":["among-us","music","funny"]},
+{"id":"fnf_tiles","name":"FNF Tiles","aliases":["Friday Night Funkin","Beep Boop Run"],"tags":["fnf","music","rhythm"]},
+{"id":"pop_hits","name":"Pop Music Mode","aliases":["Top Charts","Pop Hits Run","Radio Tiles"],"tags":["pop","music","mainstream"]},
+{"id":"lofi_mode","name":"Lo-Fi Mode","aliases":["Chill Tiles","Study Music Run","Aesthetic Run"],"tags":["lofi","chill","aesthetic"]},
+{"id":"nightcore_mode","name":"Nightcore Mode","aliases":["Fast Music Run","Nightcore Tiles"],"tags":["nightcore","fast","music"]}
+]}

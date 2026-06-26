@@ -1,0 +1,10 @@
+{"category_id":"rainbow","name":"Rainbow Friends","icon":"🌈","characters":[
+{"id":"blue","name":"Blue","aliases":["Blue Friend","Main Blue Monster","Blind Blue"],"tags":["main","blind","blue"]},
+{"id":"red","name":"Red","aliases":["Red Monster","Chapter 1 Red","Arm Swinger"],"tags":["monster","red","chapter1"]},
+{"id":"green","name":"Green","aliases":["Sneaky Green","Long Neck Green","Tall Green"],"tags":["monster","green","sneak"]},
+{"id":"purple","name":"Purple","aliases":["Purple Tentacle","Drain Monster","Purple Fish"],"tags":["monster","purple","drain"]},
+{"id":"orange","name":"Orange","aliases":["Hungry Orange","Food Lover Orange","Big Orange"],"tags":["monster","orange","hungry"]},
+{"id":"yellow","name":"Yellow","aliases":["Stiff Yellow","Cardboard Yellow","Box Monster"],"tags":["monster","yellow","stiff"]},
+{"id":"cyan","name":"Cyan","aliases":["Cyan Robot","Tech Cyan","Chapter 2 Cyan"],"tags":["monster","cyan","robot"]},
+{"id":"teal","name":"Teal","aliases":["Sneaky Teal","Chapter 2 Teal","New Monster"],"tags":["monster","teal","chapter2"]}
+]}

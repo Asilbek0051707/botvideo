@@ -1,0 +1,11 @@
+{"category_id":"geometry","name":"Geometry Dash","icon":"🔷","characters":[
+{"id":"cube","name":"Cube (Default)","aliases":["Default Cube","Basic Cube","Normal Mode"],"tags":["cube","default","start"]},
+{"id":"stereo_madness","name":"Stereo Madness","aliases":["Level 1","First Level","Auto Mode"],"tags":["easy","level1","start"]},
+{"id":"clubstep","name":"Clubstep","aliases":["Demon Level","Purple Demon","First Demon"],"tags":["demon","hard","purple"]},
+{"id":"deadlocked","name":"Deadlocked","aliases":["Level 21","Hardest Official","Robot"],"tags":["demon","hardest","official"]},
+{"id":"bloodbath","name":"Bloodbath","aliases":["Extreme Demon","Hardest Level","Blood Hell"],"tags":["extreme","impossible","community"]},
+{"id":"tartarus","name":"Tartarus","aliases":["Harder than Bloodbath","Peak of Extreme","Mega Demon"],"tags":["extreme","hardest","community"]},
+{"id":"wave","name":"Wave","aliases":["Tiny Wave","Wave Mode","Slither Wave"],"tags":["wave","mode","hard"]},
+{"id":"spider","name":"Spider","aliases":["Teleport Spider","Spider Mode","Jump Pad"],"tags":["spider","mode","medium"]},
+{"id":"robtop","name":"RobTop","aliases":["Creator","Sweden Developer","Robtop Games"],"tags":["creator","dev","sweden"]}
+]}

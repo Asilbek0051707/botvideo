@@ -1,0 +1,13 @@
+{"category_id":"sprunki","name":"Sprunki","icon":"🧩","characters":[
+{"id":"wenda","name":"Wenda","aliases":["Wenda Sprunki","Female Sprunki","Pink Sprunki"],"tags":["sprunki","female","pink"]},
+{"id":"oren","name":"Oren","aliases":["Oren Sprunki","Orange Guy","O-Ren"],"tags":["sprunki","orange","energetic"]},
+{"id":"clukr","name":"Clukr","aliases":["Clock Sprunki","Clock Man","Tic Toc"],"tags":["sprunki","clock","unique"]},
+{"id":"garnold","name":"Garnold","aliases":["Garnold Sprunki","Purple Dude","Flower Hat"],"tags":["sprunki","purple","flower"]},
+{"id":"vineria","name":"Vineria","aliases":["Vine Lady","Green Sprunki","Plant Girl"],"tags":["sprunki","green","plant"]},
+{"id":"simon","name":"Simon","aliases":["Simon Says","Colorful Simon","Pattern Simon"],"tags":["sprunki","colorful","fun"]},
+{"id":"brud","name":"Brud","aliases":["Brud Dog","Spotted Brud","Dalmatian Sprunki"],"tags":["sprunki","dog","spotted"]},
+{"id":"raddy","name":"Raddy","aliases":["Raddy Hot","Red Sprunki","Fire Hair"],"tags":["sprunki","red","fire"]},
+{"id":"tunner","name":"Tunner","aliases":["Robot Tunner","Metal Sprunki","Drum Machine"],"tags":["sprunki","robot","drums"]},
+{"id":"gray","name":"Gray","aliases":["Gray Sprunki","Dark Mode","Monochrome"],"tags":["sprunki","gray","dark"]},
+{"id":"black","name":"Black","aliases":["Black Sprunki","Scary Mode","Dark Sprunki"],"tags":["sprunki","black","horror"]}
+]}

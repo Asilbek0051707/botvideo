@@ -1,0 +1,11 @@
+{"category_id":"ai_stories","name":"AI Stories","icon":"🎙","characters":[
+{"id":"horror_story","name":"Horror Story","aliases":["Scary AI","Horror Narration","Midnight Story"],"tags":["horror","dark","night"]},
+{"id":"romance_story","name":"Romance Story","aliases":["Love Story","Romantic AI","Couple Story"],"tags":["romance","love","sweet"]},
+{"id":"adventure_story","name":"Adventure Story","aliases":["Quest Story","Hero Journey","Epic Adventure"],"tags":["adventure","quest","hero"]},
+{"id":"mystery_story","name":"Mystery Story","aliases":["Detective Story","Whodunit","Crime Mystery"],"tags":["mystery","detective","clue"]},
+{"id":"fantasy_story","name":"Fantasy Story","aliases":["Magic World","Dragon Story","Wizard Tale"],"tags":["fantasy","magic","dragon"]},
+{"id":"scifi_story","name":"Sci-Fi Story","aliases":["Space Story","Robot Future","AI World"],"tags":["scifi","space","future"]},
+{"id":"funny_story","name":"Funny Story","aliases":["Comedy AI","Humor Story","Laugh Tale"],"tags":["comedy","funny","humor"]},
+{"id":"survival_story","name":"Survival Story","aliases":["100 Days Story","Survive Challenge","Last Man"],"tags":["survival","challenge","popular"]},
+{"id":"minecraft_story","name":"Minecraft Story","aliases":["Block World Story","Steve's Journey","Creeper Tale"],"tags":["minecraft","survival","popular"]}
+]}

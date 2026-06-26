@@ -1,0 +1,11 @@
+{"category_id":"char_evo","name":"Character Evolution","icon":"📈","characters":[
+{"id":"level_1_100","name":"Level 1 to 100","aliases":["1 to 100","Low Level to Max","Noob to God"],"tags":["evolution","gaming","levels"]},
+{"id":"baby_adult","name":"Baby to Adult","aliases":["Growing Up","Baby Version","Age Evolution"],"tags":["evolution","age","baby"]},
+{"id":"noob_pro","name":"Noob to Pro","aliases":["Skill Evolution","Beginner to Expert"],"tags":["evolution","skills","gaming"]},
+{"id":"weak_strong","name":"Weak to Strong","aliases":["Power Evolution","Getting Stronger"],"tags":["evolution","power","training"]},
+{"id":"normal_evil","name":"Normal to Evil","aliases":["Corruption Arc","Hero to Villain","Dark Transformation"],"tags":["evolution","dark","transformation"]},
+{"id":"old_new","name":"Old Design to New","aliases":["Redesign","Character Upgrade","2010 vs 2024"],"tags":["evolution","redesign","comparison"]},
+{"id":"small_giant","name":"Small to Giant","aliases":["Size Evolution","Mini to Mega","Scale Up"],"tags":["evolution","size","growth"]},
+{"id":"human_monster","name":"Human to Monster","aliases":["Monster Transformation","Corruption","Evil Form"],"tags":["evolution","monster","horror"]},
+{"id":"poor_rich","name":"Poor to Rich","aliases":["Rags to Riches","No Money to Million","Luck Evolution"],"tags":["evolution","wealth","luck"]}
+]}

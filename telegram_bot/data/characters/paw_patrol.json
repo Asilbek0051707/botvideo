@@ -1,0 +1,14 @@
+{"category_id":"paw_patrol","name":"Paw Patrol","icon":"🐶","characters":[
+{"id":"chase","name":"Chase","aliases":["Police Pup","German Shepherd"],"tags":["police","dog","leader"]},
+{"id":"marshall","name":"Marshall","aliases":["Fire Pup","Dalmatian"],"tags":["fire","dog","medic"]},
+{"id":"skye","name":"Skye","aliases":["Flying Pup","Cockapoo"],"tags":["flying","girl","helicopter"]},
+{"id":"rubble","name":"Rubble","aliases":["Construction Pup","Bulldog"],"tags":["construction","dog"]},
+{"id":"rocky","name":"Rocky","aliases":["Eco Pup","Mixed Breed"],"tags":["recycling","eco","dog"]},
+{"id":"zuma","name":"Zuma","aliases":["Water Pup","Chocolate Lab"],"tags":["water","ocean","dog"]},
+{"id":"everest","name":"Everest","aliases":["Snow Pup","Husky"],"tags":["snow","winter","dog"]},
+{"id":"tracker","name":"Tracker","aliases":["Jungle Pup","Chihuahua"],"tags":["jungle","spy","dog"]},
+{"id":"tuck","name":"Tuck","aliases":["Mighty Pup","Robot Pup"],"tags":["mighty","small","dog"]},
+{"id":"ella","name":"Ella","aliases":["Mighty Pup","Elephant inspired"],"tags":["mighty","girl","dog"]},
+{"id":"ryder","name":"Ryder","aliases":["Leader Boy","10 year old"],"tags":["human","leader","boy"]},
+{"id":"liberty","name":"Liberty","aliases":["City Pup","Dachshund"],"tags":["city","dog","new"]}
+]}

@@ -1,0 +1,11 @@
+{"category_id":"subway","name":"Subway Surfers","icon":"🚇","characters":[
+{"id":"jake","name":"Jake","aliases":["Main Jake","Classic Surfer","Graffiti Jake"],"tags":["main","default","classic"]},
+{"id":"tricky","name":"Tricky","aliases":["Clown Girl","Halloween Tricky","Crazy Girl"],"tags":["girl","clown","halloween"]},
+{"id":"fresh","name":"Fresh","aliases":["Cool Fresh","Cap Fresh","Hip Hop Fresh"],"tags":["cool","hip-hop","cap"]},
+{"id":"yutani","name":"Yutani","aliases":["Alien Girl","Space Girl","Gray Alien"],"tags":["alien","girl","space"]},
+{"id":"king","name":"King","aliases":["Burger King","Crown Boy","King Character"],"tags":["special","crown","burger"]},
+{"id":"spike","name":"Spike","aliases":["Punk Spike","Mohawk","Street Punk"],"tags":["punk","mohawk","street"]},
+{"id":"inspector","name":"Inspector","aliases":["Police","Security Guard","Chaser"],"tags":["villain","police","chaser"]},
+{"id":"jake_xmas","name":"Jake (Christmas)","aliases":["Santa Jake","Xmas Jake","Holiday Jake"],"tags":["seasonal","christmas","jake"]},
+{"id":"frank","name":"Frank","aliases":["Frankenstein Frank","Halloween Frank","Monster Frank"],"tags":["halloween","monster","seasonal"]}
+]}

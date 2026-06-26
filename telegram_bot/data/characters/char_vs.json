@@ -1,0 +1,11 @@
+{"category_id":"char_vs","name":"Character VS Character","icon":"⚔","characters":[
+{"id":"good_vs_evil","name":"Good vs Evil","aliases":["Hero vs Villain","Light vs Dark"],"tags":["vs","epic","classic"]},
+{"id":"strongest_ranked","name":"Strongest Characters","aliases":["Power Ranking","Who Wins","Top 10 Strongest"],"tags":["vs","power","ranking"]},
+{"id":"marvel_vs_dc","name":"Marvel vs DC","aliases":["Crossover Battle","Superhero Fight"],"tags":["vs","crossover","superhero"]},
+{"id":"anime_vs_cartoon","name":"Anime vs Cartoon","aliases":["East vs West","Anime wins","Cartoon Battle"],"tags":["vs","crossover","anime"]},
+{"id":"spider_vs_batman","name":"Spider-Man vs Batman","aliases":["Web vs Gadget","Smart vs Agile"],"tags":["vs","marvel","dc"]},
+{"id":"goku_vs_superman","name":"Goku vs Superman","aliases":["Who's Stronger","Anime vs DC","Saiyan vs Kryptonian"],"tags":["vs","powerful","iconic"]},
+{"id":"sonic_vs_flash","name":"Sonic vs Flash","aliases":["Fastest in Universe","Speed Battle","Blue vs Red"],"tags":["vs","speed","race"]},
+{"id":"luigi_vs_tails","name":"Luigi vs Tails","aliases":["Sidekick Battle","Second Player","Brother vs Buddy"],"tags":["vs","sidekick","funny"]},
+{"id":"unlikely_matchups","name":"Unlikely Matchups","aliases":["Random VS","Unexpected Battle","Funny VS"],"tags":["vs","funny","random"]}
+]}

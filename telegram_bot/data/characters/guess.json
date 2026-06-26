@@ -1,0 +1,10 @@
+{"category_id":"guess","name":"Guess Character","icon":"❓","characters":[
+{"id":"guess_marvel","name":"Guess the Marvel Hero","aliases":["Marvel Quiz","Who is this Marvel?","Marvel Silhouette"],"tags":["quiz","marvel","silhouette"]},
+{"id":"guess_anime","name":"Guess the Anime Character","aliases":["Anime Quiz","Who is this Anime?","Anime Silhouette"],"tags":["quiz","anime","popular"]},
+{"id":"guess_minecraft","name":"Guess the Minecraft Mob","aliases":["Minecraft Quiz","Mob Silhouette","Pixel Mob"],"tags":["quiz","minecraft","mob"]},
+{"id":"guess_pokemon","name":"Guess the Pokemon","aliases":["Pokemon Quiz","Who's that Pokemon?","Gotta Catch Em"],"tags":["quiz","pokemon","classic"]},
+{"id":"guess_disney","name":"Guess the Disney Character","aliases":["Disney Quiz","Classic Disney Guess"],"tags":["quiz","disney","family"]},
+{"id":"guess_roblox","name":"Guess the Roblox Item","aliases":["Roblox Quiz","Limited Item Guess"],"tags":["quiz","roblox","item"]},
+{"id":"guess_sound","name":"Guess by Sound","aliases":["Sound Quiz","Music Guess","Audio Challenge"],"tags":["quiz","sound","music"]},
+{"id":"guess_color","name":"Guess the Colored Character","aliases":["Color Quiz","Rainbow Version Guess"],"tags":["quiz","color","rainbow"]}
+]}

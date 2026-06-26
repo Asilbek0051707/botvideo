@@ -1,0 +1,19 @@
+{
+  "types": {
+    "png":     {"name": "PNG Images",        "icon": "🖼",  "code": "png",     "desc": "Transparent PNG character images"},
+    "gs":      {"name": "Green Screen",      "icon": "🟢",  "code": "gs",      "desc": "Chroma-key background removed videos"},
+    "anim":    {"name": "Animations",        "icon": "🎬",  "code": "anim",    "desc": "Animated character loops"},
+    "gif":     {"name": "GIF",               "icon": "🎞",  "code": "gif",     "desc": "Animated GIF files"},
+    "vid":     {"name": "Videos",            "icon": "🎥",  "code": "vid",     "desc": "Full video clips"},
+    "bg":      {"name": "Backgrounds",       "icon": "🌄",  "code": "bg",      "desc": "Scene backgrounds and wallpapers"},
+    "mus":     {"name": "Music",             "icon": "🎵",  "code": "mus",     "desc": "Background music tracks"},
+    "sfx":     {"name": "Sound Effects",     "icon": "🔊",  "code": "sfx",     "desc": "Sound effects and foley"},
+    "voice":   {"name": "AI Voices",         "icon": "🎤",  "code": "voice",   "desc": "Voice references and AI TTS"},
+    "fx":      {"name": "Visual Effects",    "icon": "✨",  "code": "fx",      "desc": "Particle and VFX elements"},
+    "thumb":   {"name": "Thumbnail Assets",  "icon": "🖌",  "code": "thumb",   "desc": "Thumbnail templates and references"},
+    "prompts": {"name": "AI Prompts",        "icon": "🎨",  "code": "prompts", "desc": "Generated AI prompts"},
+    "videas":  {"name": "Video Ideas",       "icon": "📝",  "code": "videas",  "desc": "Video concept templates"},
+    "pack":    {"name": "Material Pack",     "icon": "📦",  "code": "pack",    "desc": "Complete material bundles"},
+    "search":  {"name": "Search Online",     "icon": "🌐",  "code": "search",  "desc": "Search across all providers"}
+  }
+}

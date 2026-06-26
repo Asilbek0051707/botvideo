@@ -1,0 +1,10 @@
+{"category_id":"circus","name":"Amazing Digital Circus","icon":"🎪","characters":[
+{"id":"pomni","name":"Pomni","aliases":["Jester Girl","New Arrival","Blue Jester"],"tags":["main","jester","scared"]},
+{"id":"caine","name":"Caine","aliases":["Ringmaster","AI Host","Top Hat Guy"],"tags":["host","ai","ringmaster"]},
+{"id":"jax","name":"Jax","aliases":["Pink Rabbit","Annoying Rabbit","Purple Bunny"],"tags":["rabbit","mean","funny"]},
+{"id":"gangle","name":"Gangle","aliases":["Ribbon Girl","Comedy Tragedy","Mask Face"],"tags":["ribbon","sad","masks"]},
+{"id":"kinger","name":"Kinger","aliases":["Chess King","Anxious King","Glitch King"],"tags":["chess","anxious","old"]},
+{"id":"ragatha","name":"Ragatha","aliases":["Ragdoll Girl","Sweet Ragatha","Optimist"],"tags":["ragdoll","kind","positive"]},
+{"id":"zooble","name":"Zooble","aliases":["Mixed Parts","Blob Thing","Zooble Parts"],"tags":["unique","grumpy","mixed"]},
+{"id":"bubble","name":"Bubble","aliases":["Pink Bubble","Caregiver Bubble","Glitched Bubble"],"tags":["bubble","helper","mysterious"]}
+]}
