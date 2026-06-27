@@ -1,8 +1,6 @@
-"""Channel Analyzer router — 📊 6-item grid with useful tools."""
+"""Channel Analyzer — in-bot analytics via yt-dlp (no API key needed)."""
 
 from __future__ import annotations
-
-from urllib.parse import quote_plus
 
 from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
@@ -22,44 +20,27 @@ class ChannelStates(StatesGroup):
 
 
 _ITEMS: list[tuple[str, str]] = [
-    ("🔗 Analyze Channel",   "ca:channel"),
-    ("🎥 Analyze Video",     "ca:video"),
-    ("🖼 Analyze Thumbnail", "ca:thumbnail"),
-    ("🏆 Competitors",       "ca:competitors"),
-    ("📈 Growth Prediction", "ca:growth"),
-    ("📊 Statistics",        "ca:statistics"),
+    ("🔗 Kanal Tahlili",     "ca:channel"),
+    ("🎥 Video Tahlili",     "ca:video"),
+    ("🖼 Thumbnail Qoidasi", "ca:thumbnail"),
+    ("🏆 Raqiblar",          "ca:competitors"),
+    ("📈 O'sish Maslahat",   "ca:growth"),
+    ("📊 Stats Asboblar",    "ca:statistics"),
 ]
 
 _LABEL: dict[str, str] = {data: label for label, data in _ITEMS}
 
-_STATS_TOOLS: list[tuple[str, str]] = [
-    ("📊 SocialBlade",       "https://socialblade.com/youtube/"),
-    ("🔍 Noxinfluencer",     "https://www.noxinfluencer.com/youtube/"),
-    ("🎯 vidIQ Extension",   "https://vidiq.com/"),
-    ("🔧 TubeBuddy",         "https://www.tubebuddy.com/"),
-    ("📈 YouTube Studio",    "https://studio.youtube.com/"),
-    ("📉 Google Trends",     "https://trends.google.com/trends/?geo=US&q=youtube"),
-]
-
-_THUMBNAIL_TOOLS: list[tuple[str, str]] = [
-    ("🎨 Canva Thumbnail",   "https://www.canva.com/create/youtube-thumbnails/"),
-    ("🖼 Adobe Express",     "https://www.adobe.com/express/create/thumbnail/youtube"),
-    ("🔍 Thumbnail Test",    "https://www.thumbnailtest.com/"),
-    ("🤖 Midjourney",        "https://www.midjourney.com/"),
-    ("🎭 Fotor",             "https://www.fotor.com/features/youtube-thumbnail-maker/"),
-]
-
 _GROWTH_TIPS = [
-    "📅 Upload consistently — 3–5 Shorts per week minimum",
-    "🎯 Niche down — 1 topic = faster algorithm pick-up",
-    "🔥 Hook in first 2 seconds — no slow intros",
-    "🏷 Use 3–5 hashtags: #Shorts + 2 niche + 1 trending",
-    "🖼 A/B test thumbnails — change thumbnail if CTR < 4%",
-    "💬 Reply to every comment in first 24h — boosts algo",
-    "🔄 Repurpose: long video → 5–10 Shorts clips",
-    "📊 Post when your audience is online (check YouTube Analytics)",
-    "🤝 Collaborate with channels in same niche",
-    "📈 End screen + pinned comment = +30% watch time",
+    "📅 Haftada 3–5 Shorts yuklang — muntazamlik asosiy",
+    "🎯 Bitta mavzuga yopishing — algoritm tezroq taniydi",
+    "🔥 Dastlabki 2 soniyada hook bo'lsin — sekin boshlash yo'q",
+    "🏷 3–5 hashtag: #Shorts + 2 niche + 1 trending",
+    "🖼 CTR 4% dan past bo'lsa thumbnail'ni almashtiring",
+    "💬 Dastlabki 24 soatda har bir izohga javob bering",
+    "🔄 Uzun video → 5–10 ta Shorts klip qiling",
+    "📊 Auditoriyangiz onlayn bo'lgan vaqtda yuklang",
+    "🤝 O'zingiz bilan bir niche'dagi kanallar bilan hamkorlik",
+    "📈 End screen + pinned comment = +30% ko'rish vaqti",
 ]
 
 
@@ -72,215 +53,230 @@ def _ca_keyboard():
     return builder.as_markup()
 
 
-def _url_buttons_keyboard(items: list[tuple[str, str]], current: str):
-    builder = InlineKeyboardBuilder()
-    for label, url in items:
-        builder.button(text=label, url=url)
-    builder.adjust(1)
-    add_nav_row(builder, current=current, parent="menu:channel_analyzer")
-    return builder.as_markup()
-
+# ── main grid ─────────────────────────────────────────────────────
 
 @router.callback_query(F.data == "menu:channel_analyzer")
 async def on_channel_analyzer(callback: CallbackQuery) -> None:
     await callback.message.edit_text(  # type: ignore[union-attr]
-        "📊 <b>Channel Analyzer</b>\n\nChoose an analysis:",
+        "📊 <b>Channel Analyzer</b>\n\nNimani tahlil qilmoqchisiz?",
         reply_markup=_ca_keyboard(),
     )
     await callback.answer()
 
 
-# ── Analyze Channel ───────────────────────────────────────────────
-
+# ── Kanal tahlili ─────────────────────────────────────────────────
 
 @router.callback_query(F.data == "ca:channel")
 async def on_channel(callback: CallbackQuery, state: FSMContext) -> None:
     await state.set_state(ChannelStates.waiting_for_channel)
     await callback.message.edit_text(  # type: ignore[union-attr]
-        "🔗 <b>Analyze Channel</b>\n\n"
-        "Enter the YouTube channel @username or URL:"
+        "🔗 <b>Kanal Tahlili</b>\n\n"
+        "Kanal @username, URL yoki nomini yozing:\n\n"
+        "Misol: <code>@MrBeast</code>\n"
+        "Yoki: <code>NeonRush</code>"
     )
     await callback.answer()
 
 
 @router.message(ChannelStates.waiting_for_channel)
 async def on_channel_input(message: Message, state: FSMContext) -> None:
-    raw = (message.text or "").strip().lstrip("@")
+    from telegram_bot.services.youtube_service import get_channel, format_channel
+    raw = (message.text or "").strip()
     await state.clear()
 
     if not raw:
-        await message.answer("❌ Empty input. Tap Analyze Channel to try again.")
+        await message.answer("❌ Bo'sh. Qayta urining.")
         return
 
-    encoded = quote_plus(raw)
-    yt_channel_url = (
-        raw if raw.startswith("http")
-        else f"https://www.youtube.com/@{raw}"
-    )
-    sb_url = f"https://socialblade.com/youtube/user/{encoded}"
-    nox_url = f"https://www.noxinfluencer.com/youtube/channel/{encoded}"
+    wait_msg = await message.answer("🔍 Kanal ma'lumotlari yuklanmoqda...")
+
+    try:
+        ch = await get_channel(raw)
+    except Exception as e:
+        await wait_msg.edit_text(
+            f"❌ Xatolik yuz berdi: {e}\n\nQayta urining.",
+            reply_markup=get_nav_keyboard("ca:channel", "menu:channel_analyzer"),
+        )
+        return
+
+    if not ch:
+        await wait_msg.edit_text(
+            f"❌ <b>{raw}</b> — kanal topilmadi.\n\n"
+            "To'g'ri @username yoki URL kiriting.",
+            reply_markup=get_nav_keyboard("ca:channel", "menu:channel_analyzer"),
+        )
+        return
 
     builder = InlineKeyboardBuilder()
-    builder.button(text="📺 Open Channel",     url=yt_channel_url)
-    builder.button(text="📊 SocialBlade",      url=sb_url)
-    builder.button(text="🔍 Noxinfluencer",    url=nox_url)
-    builder.button(text="🎯 vidIQ",            url="https://vidiq.com/")
+    builder.button(text="▶️ YouTube'da ochish", url=ch.channel_url)
     builder.adjust(1)
     add_nav_row(builder, current="ca:channel", parent="menu:channel_analyzer")
 
-    await message.answer(
-        f"🔗 <b>Channel: {raw}</b>\n\n"
-        "Open these tools to see full analytics:",
+    await wait_msg.edit_text(
+        format_channel(ch),
         reply_markup=builder.as_markup(),
     )
 
 
-# ── Analyze Video ─────────────────────────────────────────────────
-
+# ── Video tahlili ─────────────────────────────────────────────────
 
 @router.callback_query(F.data == "ca:video")
 async def on_video(callback: CallbackQuery, state: FSMContext) -> None:
     await state.set_state(ChannelStates.waiting_for_video)
     await callback.message.edit_text(  # type: ignore[union-attr]
-        "🎥 <b>Analyze Video</b>\n\n"
-        "Paste the YouTube video URL:"
+        "🎥 <b>Video Tahlili</b>\n\n"
+        "Video URL yoki ID ni yozing:\n\n"
+        "Misol: <code>https://youtu.be/dQw4w9WgXcQ</code>\n"
+        "Yoki: <code>dQw4w9WgXcQ</code>"
     )
     await callback.answer()
 
 
 @router.message(ChannelStates.waiting_for_video)
 async def on_video_input(message: Message, state: FSMContext) -> None:
-    url = (message.text or "").strip()
+    from telegram_bot.services.youtube_service import get_video, format_video
+    raw = (message.text or "").strip()
     await state.clear()
 
-    if not url:
-        await message.answer("❌ Empty URL. Tap Analyze Video to try again.")
+    if not raw:
+        await message.answer("❌ Bo'sh. Qayta urining.")
         return
 
-    # Extract video ID for tool links
-    vid_id = ""
-    if "v=" in url:
-        vid_id = url.split("v=")[1].split("&")[0]
-    elif "youtu.be/" in url:
-        vid_id = url.split("youtu.be/")[1].split("?")[0]
+    wait_msg = await message.answer("🔍 Video ma'lumotlari yuklanmoqda...")
+
+    try:
+        v = await get_video(raw)
+    except Exception as e:
+        await wait_msg.edit_text(
+            f"❌ Xatolik: {e}\n\nQayta urining.",
+            reply_markup=get_nav_keyboard("ca:video", "menu:channel_analyzer"),
+        )
+        return
+
+    if not v:
+        await wait_msg.edit_text(
+            "❌ Video topilmadi.\n\nTo'g'ri YouTube URL yuboring.",
+            reply_markup=get_nav_keyboard("ca:video", "menu:channel_analyzer"),
+        )
+        return
 
     builder = InlineKeyboardBuilder()
-    builder.button(text="▶️ Open Video",         url=url if url.startswith("http") else f"https://youtu.be/{url}")
-    if vid_id:
-        builder.button(text="🔍 vidIQ Analysis", url=f"https://vidiq.com/youtube-tools/video-scorecard/?v={vid_id}")
-    builder.button(text="🔧 TubeBuddy",          url="https://www.tubebuddy.com/")
-    builder.button(text="📈 YouTube Studio",      url="https://studio.youtube.com/")
+    builder.button(text="▶️ YouTube'da ko'rish", url=f"https://youtu.be/{v.video_id}")
     builder.adjust(1)
     add_nav_row(builder, current="ca:video", parent="menu:channel_analyzer")
 
-    await message.answer(
-        "🎥 <b>Video Analysis Tools</b>\n\n"
-        "Open these tools to analyze the video:",
-        reply_markup=builder.as_markup(),
-    )
+    await wait_msg.edit_text(format_video(v), reply_markup=builder.as_markup())
 
 
-# ── Thumbnail Analyzer ────────────────────────────────────────────
-
+# ── Thumbnail qoidalari ───────────────────────────────────────────
 
 @router.callback_query(F.data == "ca:thumbnail")
 async def on_thumbnail(callback: CallbackQuery) -> None:
+    builder = InlineKeyboardBuilder()
+    for label, url in [
+        ("🎨 Canva",         "https://www.canva.com/create/youtube-thumbnails/"),
+        ("✏️ Adobe Express", "https://www.adobe.com/express/create/thumbnail/youtube"),
+        ("🎭 Fotor",         "https://www.fotor.com/features/youtube-thumbnail-maker/"),
+        ("🖼 Freepik",       "https://www.freepik.com/search?query=youtube+thumbnail&type=psd"),
+    ]:
+        builder.button(text=label, url=url)
+    builder.adjust(1)
+    add_nav_row(builder, current="ca:thumbnail", parent="menu:channel_analyzer")
+
     await callback.message.edit_text(  # type: ignore[union-attr]
-        "🖼 <b>Thumbnail Analyzer</b>\n\n"
-        "<b>Best practices:</b>\n"
-        "• 1280×720px (16:9 ratio)\n"
-        "• Max 2 MB file size\n"
-        "• Big bold text (max 6 words)\n"
-        "• High contrast colors\n"
-        "• Face with expression (CTR +38%)\n"
-        "• No text in corners (cropped on mobile)\n\n"
-        "Design tools:",
-        reply_markup=_url_buttons_keyboard(_THUMBNAIL_TOOLS, "ca:thumbnail"),
+        "🖼 <b>Thumbnail Qoidalari</b>\n\n"
+        "✅ O'lcham: <b>1280×720px</b> (16:9)\n"
+        "✅ Fayl hajmi: <b>2 MB dan kam</b>\n"
+        "✅ Matn: <b>maksimal 6 so'z</b>, katta shrift\n"
+        "✅ Yuqori kontrast ranglar\n"
+        "✅ Yuz ifodasi (CTR +38% oshiradi)\n"
+        "✅ Burchaklarda matn yo'q (mobilda kesiladi)\n\n"
+        "Dizayn asboblari:",
+        reply_markup=builder.as_markup(),
     )
     await callback.answer()
 
 
-# ── Competitors ───────────────────────────────────────────────────
-
+# ── Raqiblar ─────────────────────────────────────────────────────
 
 @router.callback_query(F.data == "ca:competitors")
 async def on_competitors(callback: CallbackQuery, state: FSMContext) -> None:
     await state.set_state(ChannelStates.waiting_for_niche)
     await callback.message.edit_text(  # type: ignore[union-attr]
-        "🏆 <b>Competitor Research</b>\n\n"
-        "Enter your channel niche or topic\n"
-        "(e.g. <i>Minecraft kids, Spider-Man animation</i>):"
+        "🏆 <b>Raqiblar Tahlili</b>\n\n"
+        "Kanal yo'nalishi yoki mavzusini yozing:\n\n"
+        "Misol: <code>Minecraft kids animation</code>"
     )
     await callback.answer()
 
 
 @router.message(ChannelStates.waiting_for_niche)
 async def on_niche_input(message: Message, state: FSMContext) -> None:
+    from urllib.parse import quote_plus
     niche = (message.text or "").strip()
     await state.clear()
 
     if not niche:
-        await message.answer("❌ Empty input. Tap Competitors to try again.")
+        await message.answer("❌ Bo'sh. Qayta urining.")
         return
 
-    encoded = quote_plus(niche)
+    q = quote_plus(niche)
     builder = InlineKeyboardBuilder()
     builder.button(
-        text="🔍 YouTube Search",
-        url=f"https://www.youtube.com/results?search_query={encoded}&sp=CAM%253D"
+        text="🔍 YouTube'da qidirish",
+        url=f"https://www.youtube.com/results?search_query={q}&sp=CAM%253D"
     )
     builder.button(
-        text="📊 Top Channels",
-        url=f"https://www.youtube.com/results?search_query={encoded}+channel&sp=CAM%253D"
-    )
-    builder.button(
-        text="🌐 Noxinfluencer Search",
-        url=f"https://www.noxinfluencer.com/youtube/search?keyword={encoded}"
+        text="📊 Noxinfluencer",
+        url=f"https://www.noxinfluencer.com/youtube/search?keyword={q}"
     )
     builder.adjust(1)
     add_nav_row(builder, current="ca:competitors", parent="menu:channel_analyzer")
 
     await message.answer(
-        f"🏆 <b>Competitors: {niche}</b>\n\n"
-        "Find top channels in your niche:",
+        f"🏆 <b>Raqiblar: {niche}</b>\n\n"
+        "Shu yo'nalishdagi top kanallarni toping:",
         reply_markup=builder.as_markup(),
     )
 
 
-# ── Growth Prediction ─────────────────────────────────────────────
-
+# ── O'sish maslahatlar ────────────────────────────────────────────
 
 @router.callback_query(F.data == "ca:growth")
 async def on_growth(callback: CallbackQuery) -> None:
-    tips_text = "\n".join(f"{i+1}. {tip}" for i, tip in enumerate(_GROWTH_TIPS))
+    tips = "\n".join(f"{i+1}. {t}" for i, t in enumerate(_GROWTH_TIPS))
     builder = InlineKeyboardBuilder()
-    builder.button(
-        text="📈 YouTube Creator Academy",
-        url="https://creatoracademy.youtube.com/"
-    )
-    builder.button(
-        text="📊 Think with Google",
-        url="https://www.thinkwithgoogle.com/marketing-strategies/video/youtube-shorts/"
-    )
+    builder.button(text="📈 YouTube Creator Academy", url="https://creatoracademy.youtube.com/")
     builder.adjust(1)
     add_nav_row(builder, current="ca:growth", parent="menu:channel_analyzer")
 
     await callback.message.edit_text(  # type: ignore[union-attr]
-        "📈 <b>Growth Prediction Tips</b>\n\n"
-        f"{tips_text}",
+        f"📈 <b>O'sish Maslahatlar</b>\n\n{tips}",
         reply_markup=builder.as_markup(),
     )
     await callback.answer()
 
 
-# ── Statistics ────────────────────────────────────────────────────
-
+# ── Stats asboblar ────────────────────────────────────────────────
 
 @router.callback_query(F.data == "ca:statistics")
 async def on_statistics(callback: CallbackQuery) -> None:
+    builder = InlineKeyboardBuilder()
+    for label, url in [
+        ("📊 SocialBlade",    "https://socialblade.com/youtube/"),
+        ("🔍 Noxinfluencer",  "https://www.noxinfluencer.com/youtube/"),
+        ("🎯 vidIQ",          "https://vidiq.com/"),
+        ("🔧 TubeBuddy",      "https://www.tubebuddy.com/"),
+        ("📈 YouTube Studio", "https://studio.youtube.com/"),
+        ("📉 Google Trends",  "https://trends.google.com/"),
+    ]:
+        builder.button(text=label, url=url)
+    builder.adjust(1)
+    add_nav_row(builder, current="ca:statistics", parent="menu:channel_analyzer")
+
     await callback.message.edit_text(  # type: ignore[union-attr]
-        "📊 <b>Channel Statistics Tools</b>\n\n"
-        "Professional tools to track your YouTube stats:",
-        reply_markup=_url_buttons_keyboard(_STATS_TOOLS, "ca:statistics"),
+        "📊 <b>Statistika Asboblari</b>\n\n"
+        "Kanal statistikasi uchun professional asboblar:",
+        reply_markup=builder.as_markup(),
     )
     await callback.answer()

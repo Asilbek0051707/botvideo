@@ -80,6 +80,9 @@ class Settings(BaseSettings):
     target_duration_sec: int = 45
     max_duration_sec: int = 60
 
+    # ---- YouTube Data API ----
+    youtube_api_key: str | None = None       # Google Cloud → YouTube Data API v3
+
     # ---- Telegram ----
     telegram_bot_token: str | None = None
     admin_id: int | None = None              # single admin Telegram user ID
