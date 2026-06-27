@@ -19,7 +19,6 @@ from factory.core.config import settings
 from factory.core.logging import configure_logging, get_logger
 from telegram_bot.core.startup import on_shutdown, on_startup
 from telegram_bot.handlers import register_handlers
-from telegram_bot.middlewares.auth import AdminOnlyMiddleware
 from telegram_bot.middlewares.logging import RequestLoggingMiddleware
 from telegram_bot.routers import register_routers
 
@@ -29,10 +28,7 @@ log = get_logger("telegram.bot")
 def _build_dispatcher() -> Dispatcher:
     dp = Dispatcher(storage=MemoryStorage())
 
-    # --- Middlewares (outer → inner) ---
-    # Auth gate: blocks non-admin users before any handler runs
-    dp.update.outer_middleware(AdminOnlyMiddleware())
-    # Logging: records every update for debugging
+    # --- Middlewares ---
     dp.update.middleware(RequestLoggingMiddleware())
 
     # --- Routers (feature modules) ---

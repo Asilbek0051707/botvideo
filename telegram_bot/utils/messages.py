@@ -4,8 +4,7 @@ from __future__ import annotations
 
 WELCOME_TEXT = (
     "🏠 <b>YouTube AI Studio</b>\n\n"
-    "Welcome back!\n\n"
-    "Choose a module:"
+    "Welcome! Choose a module to get started:"
 )
 
 COMING_SOON_TEXT = (
