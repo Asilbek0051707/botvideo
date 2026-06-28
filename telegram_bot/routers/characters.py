@@ -51,6 +51,7 @@ def _char_page_keyboard(cat_id: str, char_id: str, is_fav: bool = False):
         InlineKeyboardButton(text="📝 Video Ideas",callback_data=f"charvideas:{cat_id}:{char_id}"),
     )
     builder.row(
+        InlineKeyboardButton(text="🎬 Video Kit",     callback_data=f"vidkit:{cat_id}:{char_id}"),
         InlineKeyboardButton(text="🌐 Search Online", callback_data=f"charmat:search:{cat_id}:{char_id}"),
         InlineKeyboardButton(text="📁 New Project",   callback_data=f"charprojcreate:{cat_id}:{char_id}"),
     )

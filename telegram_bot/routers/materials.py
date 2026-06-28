@@ -21,9 +21,10 @@ class MatSearchStates(StatesGroup):
 
 
 _ITEMS: list[tuple[str, str]] = [
+    ("🎬 Cap Cut To'plam",  "menu:video_kit"),   # ← new kit button
     ("🖼 PNG Images",       "mat:png"),
     ("🟢 Green Screen",     "mat:gs"),
-    ("🎬 Animations",       "mat:anim"),
+    ("🎞 Animations",       "mat:anim"),
     ("🎞 GIF",              "mat:gif"),
     ("🎥 Videos",           "mat:vid"),
     ("🌄 Backgrounds",      "mat:bg"),
@@ -59,9 +60,14 @@ _MAT_HINT: dict[str, str] = {
 
 def _materials_keyboard():
     builder = InlineKeyboardBuilder()
-    for label, data in _ITEMS:
+    # First item (Video Kit) gets full width
+    kit_label, kit_data = _ITEMS[0]
+    builder.button(text=kit_label, callback_data=kit_data)
+    builder.adjust(1)
+    # Rest in 2 columns
+    for label, data in _ITEMS[1:]:
         builder.button(text=label, callback_data=data)
-    builder.adjust(2)
+    builder.adjust(1, *([2] * ((len(_ITEMS) - 1 + 1) // 2 + 1)))
     add_nav_row(builder, current="menu:materials")
     return builder.as_markup()
 

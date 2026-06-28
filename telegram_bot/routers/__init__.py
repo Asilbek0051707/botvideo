@@ -18,6 +18,7 @@ from telegram_bot.routers import (
     statistics,
     trend_analyzer,
     trends,
+    video_kit,
 )
 
 
@@ -35,4 +36,5 @@ def register_routers(dp: Dispatcher) -> None:
     dp.include_router(statistics.router)
     dp.include_router(settings_router.router)
     dp.include_router(favorites.router)
+    dp.include_router(video_kit.router)
     dp.include_router(search_router.router)
