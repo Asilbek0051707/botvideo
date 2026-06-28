@@ -141,6 +141,94 @@ async def search_competitors(niche: str, limit: int = 4) -> list[dict]:
     return await asyncio.to_thread(_search_competitors_sync, niche, limit)
 
 
+# ─── ffmpeg path ──────────────────────────────────────────────────
+
+def _ffmpeg_exe() -> str | None:
+    try:
+        import imageio_ffmpeg  # type: ignore
+        return imageio_ffmpeg.get_ffmpeg_exe()
+    except Exception:
+        return None
+
+
+# ─── yt-dlp audio download ────────────────────────────────────────
+
+def _download_yt_audio_sync(url: str) -> tuple[bytes, str] | None:
+    """Download YouTube audio as mp3 (via ffmpeg). Returns (bytes, title)."""
+    import yt_dlp, tempfile, os  # type: ignore
+    ffmpeg = _ffmpeg_exe()
+    with tempfile.TemporaryDirectory() as tmpdir:
+        opts: dict = {
+            "format": "bestaudio/best",
+            "outtmpl": f"{tmpdir}/%(id)s.%(ext)s",
+            "quiet": True,
+            "no_warnings": True,
+        }
+        if ffmpeg:
+            opts["ffmpeg_location"] = ffmpeg
+            opts["postprocessors"] = [{
+                "key": "FFmpegExtractAudio",
+                "preferredcodec": "mp3",
+                "preferredquality": "128",
+            }]
+        try:
+            with yt_dlp.YoutubeDL(opts) as ydl:
+                info = ydl.extract_info(url, download=True) or {}
+            title = info.get("title", "audio")
+            for fname in os.listdir(tmpdir):
+                path = os.path.join(tmpdir, fname)
+                size = os.path.getsize(path)
+                if size > 10_000:
+                    with open(path, "rb") as fp:
+                        return fp.read(), title
+        except Exception:
+            pass
+    return None
+
+
+async def download_yt_audio(url: str) -> tuple[bytes, str] | None:
+    return await asyncio.to_thread(_download_yt_audio_sync, url)
+
+
+# ─── yt-dlp video download ────────────────────────────────────────
+
+def _download_yt_video_sync(url: str, max_mb: int = 45) -> tuple[bytes, str] | None:
+    """Download YouTube video at 360p. Returns (bytes, title)."""
+    import yt_dlp, tempfile, os  # type: ignore
+    ffmpeg = _ffmpeg_exe()
+    max_bytes = max_mb * 1024 * 1024
+    with tempfile.TemporaryDirectory() as tmpdir:
+        opts: dict = {
+            "format": (
+                f"best[height<=360][filesize<{max_bytes}]"
+                f"/best[height<=480][filesize<{max_bytes}]"
+                "/worst[ext=mp4]/worst"
+            ),
+            "outtmpl": f"{tmpdir}/%(id)s.%(ext)s",
+            "quiet": True,
+            "no_warnings": True,
+        }
+        if ffmpeg:
+            opts["ffmpeg_location"] = ffmpeg
+        try:
+            with yt_dlp.YoutubeDL(opts) as ydl:
+                info = ydl.extract_info(url, download=True) or {}
+            title = info.get("title", "video")
+            for fname in os.listdir(tmpdir):
+                path = os.path.join(tmpdir, fname)
+                size = os.path.getsize(path)
+                if 10_000 < size < max_bytes:
+                    with open(path, "rb") as fp:
+                        return fp.read(), title
+        except Exception:
+            pass
+    return None
+
+
+async def download_yt_video(url: str, max_mb: int = 45) -> tuple[bytes, str] | None:
+    return await asyncio.to_thread(_download_yt_video_sync, url, max_mb)
+
+
 @dataclass
 class RealResult:
     title: str
