@@ -39,7 +39,7 @@ async def download_images(results: list, limit: int = 4) -> list[tuple[bytes, st
 
 
 async def download_yt_thumbnails(results: list, limit: int = 4) -> list[tuple[bytes, object]]:
-    """Download YouTube video thumbnails. Returns (jpg_bytes, RealResult) pairs."""
+    """Download YouTube video thumbnails at max resolution. Returns (jpg_bytes, RealResult) pairs."""
     import re, httpx
     downloaded: list[tuple[bytes, object]] = []
     async with httpx.AsyncClient(timeout=10, follow_redirects=True) as client:
@@ -53,14 +53,20 @@ async def download_yt_thumbnails(results: list, limit: int = 4) -> list[tuple[by
                     vid_id = m.group(1)
             if not vid_id:
                 continue
-            try:
-                resp = await client.get(
-                    f"https://img.youtube.com/vi/{vid_id}/hqdefault.jpg"
-                )
-                if resp.status_code == 200 and len(resp.content) > 5_000:
-                    downloaded.append((resp.content, r))
-            except Exception:
-                continue
+            # Try highest quality first: maxresdefault (1280x720+) → hqdefault fallback
+            thumb_data: bytes | None = None
+            for quality in ("maxresdefault", "sddefault", "hqdefault"):
+                try:
+                    resp = await client.get(
+                        f"https://img.youtube.com/vi/{vid_id}/{quality}.jpg"
+                    )
+                    if resp.status_code == 200 and len(resp.content) > 5_000:
+                        thumb_data = resp.content
+                        break
+                except Exception:
+                    continue
+            if thumb_data:
+                downloaded.append((thumb_data, r))
     return downloaded
 
 
@@ -154,12 +160,12 @@ def _ffmpeg_exe() -> str | None:
 # ─── yt-dlp audio download ────────────────────────────────────────
 
 def _download_yt_audio_sync(url: str) -> tuple[bytes, str] | None:
-    """Download YouTube audio as mp3 (via ffmpeg). Returns (bytes, title)."""
+    """Download YouTube audio as mp3 320kbps (via ffmpeg). Returns (bytes, title)."""
     import yt_dlp, tempfile, os  # type: ignore
     ffmpeg = _ffmpeg_exe()
     with tempfile.TemporaryDirectory() as tmpdir:
         opts: dict = {
-            "format": "bestaudio/best",
+            "format": "bestaudio[abr>=192]/bestaudio/best",
             "outtmpl": f"{tmpdir}/%(id)s.%(ext)s",
             "quiet": True,
             "no_warnings": True,
@@ -169,7 +175,7 @@ def _download_yt_audio_sync(url: str) -> tuple[bytes, str] | None:
             opts["postprocessors"] = [{
                 "key": "FFmpegExtractAudio",
                 "preferredcodec": "mp3",
-                "preferredquality": "128",
+                "preferredquality": "320",
             }]
         try:
             with yt_dlp.YoutubeDL(opts) as ydl:
@@ -193,31 +199,71 @@ async def download_yt_audio(url: str) -> tuple[bytes, str] | None:
 # ─── yt-dlp video download ────────────────────────────────────────
 
 def _download_yt_video_sync(url: str, max_mb: int = 45) -> tuple[bytes, str] | None:
-    """Download YouTube video at 360p. Returns (bytes, title)."""
+    """Download YouTube video at highest quality fitting within max_mb (Telegram limit).
+
+    Tries in order: 4K → 2K → 1080p → 720p until one fits under max_mb.
+    Merges best video + best audio via ffmpeg.
+    """
     import yt_dlp, tempfile, os  # type: ignore
     ffmpeg = _ffmpeg_exe()
     max_bytes = max_mb * 1024 * 1024
+
+    # Quality ladder — tries highest first, falls back automatically
+    fmt = (
+        "bestvideo[height<=2160][ext=mp4]+bestaudio[ext=m4a]"
+        "/bestvideo[height<=1440][ext=mp4]+bestaudio[ext=m4a]"
+        "/bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]"
+        "/bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]"
+        "/best[ext=mp4]/best"
+    )
+
     with tempfile.TemporaryDirectory() as tmpdir:
         opts: dict = {
-            "format": (
-                f"best[height<=360][filesize<{max_bytes}]"
-                f"/best[height<=480][filesize<{max_bytes}]"
-                "/worst[ext=mp4]/worst"
-            ),
+            "format": fmt,
+            "outtmpl": f"{tmpdir}/%(id)s.%(ext)s",
+            "quiet": True,
+            "no_warnings": True,
+            "merge_output_format": "mp4",
+        }
+        if ffmpeg:
+            opts["ffmpeg_location"] = ffmpeg
+
+        try:
+            with yt_dlp.YoutubeDL(opts) as ydl:
+                info = ydl.extract_info(url, download=True) or {}
+            title = info.get("title", "video")
+
+            for fname in sorted(os.listdir(tmpdir)):
+                path = os.path.join(tmpdir, fname)
+                size = os.path.getsize(path)
+                if size < 10_000:
+                    continue
+                if size <= max_bytes:
+                    with open(path, "rb") as fp:
+                        return fp.read(), title
+                # File too large — re-download at lower quality
+                break
+        except Exception:
+            pass
+
+    # Fallback: try 720p if high-res was too big
+    with tempfile.TemporaryDirectory() as tmpdir:
+        opts2: dict = {
+            "format": "best[height<=720][ext=mp4]/best[ext=mp4]/best",
             "outtmpl": f"{tmpdir}/%(id)s.%(ext)s",
             "quiet": True,
             "no_warnings": True,
         }
         if ffmpeg:
-            opts["ffmpeg_location"] = ffmpeg
+            opts2["ffmpeg_location"] = ffmpeg
         try:
-            with yt_dlp.YoutubeDL(opts) as ydl:
+            with yt_dlp.YoutubeDL(opts2) as ydl:
                 info = ydl.extract_info(url, download=True) or {}
             title = info.get("title", "video")
             for fname in os.listdir(tmpdir):
                 path = os.path.join(tmpdir, fname)
                 size = os.path.getsize(path)
-                if 10_000 < size < max_bytes:
+                if 10_000 < size <= max_bytes:
                     with open(path, "rb") as fp:
                         return fp.read(), title
         except Exception:
@@ -243,18 +289,26 @@ def _ddg_images_sync(query: str, limit: int) -> list[RealResult]:
     try:
         from ddgs import DDGS  # type: ignore
         results = []
+        # Request more results to filter by quality (prefer large/HD images)
         with DDGS() as d:
-            for r in d.images(query, max_results=limit):
+            for r in d.images(query, max_results=limit * 3):
                 source = r.get("source", "") or r.get("url", "")
                 domain = source.split("/")[2] if "//" in source else source
                 img_url = r.get("image", "") or r.get("url", "")
                 if not img_url:
+                    continue
+                # Prefer high-resolution images: width >= 1000 or unknown
+                w = r.get("width", 0)
+                h = r.get("height", 0)
+                if w and w < 500:   # skip tiny images
                     continue
                 results.append(RealResult(
                     title=r.get("title", query)[:60],
                     url=img_url,
                     source=domain,
                 ))
+                if len(results) >= limit:
+                    break
         return results
     except Exception:
         return []
