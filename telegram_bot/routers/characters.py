@@ -177,6 +177,8 @@ _MAT_NAMES = {
     "thumb":  "Thumbnails",   "search":"Search Online",
 }
 
+IMAGE_CODES = {"png", "bg", "thumb", "gif"}
+
 _MAT_ICONS = {
     "png": "🖼", "gs": "🟢", "anim": "🎬", "gif": "🎞", "vid": "🎥",
     "bg": "🌄", "mus": "🎵", "sfx": "🔊", "voice": "🎤", "fx": "✨",
@@ -201,7 +203,10 @@ async def on_char_material(callback: CallbackQuery) -> None:
         await _show_video_ideas(callback, cat_id, char_id)
         return
 
-    from telegram_bot.services.real_search import search_for_material
+    from telegram_bot.services.real_search import (
+        IMAGE_MAT_CODES, download_images, search_for_material,
+    )
+    from aiogram.types import BufferedInputFile, InputMediaPhoto
 
     char = char_service.get_character(cat_id, char_id)
     if not char:
@@ -227,6 +232,31 @@ async def on_char_material(callback: CallbackQuery) -> None:
             reply_markup=get_nav_keyboard(curr_cb, back_cb),
         )
         return
+
+    # Image types — download and send as actual photos
+    if mat_code in IMAGE_CODES:
+        await callback.message.edit_text(  # type: ignore[union-attr]
+            f"{mat_icon} <b>{mat_name}</b> — {char.name}\n\n⬇️ Rasmlar yuklanmoqda..."
+        )
+        photos = await download_images(results, limit=4)
+        if photos:
+            media = []
+            for i, (data, title) in enumerate(photos):
+                ext = "gif" if mat_code == "gif" else "png"
+                f = BufferedInputFile(data, filename=f"img_{i+1}.{ext}")
+                cap = f"{mat_icon} <b>{mat_name}</b> — {char.name}" if i == 0 else None
+                media.append(InputMediaPhoto(media=f, caption=cap, parse_mode="HTML"))
+            await callback.message.answer_media_group(media)  # type: ignore[union-attr]
+            builder = InlineKeyboardBuilder()
+            builder.row(
+                InlineKeyboardButton(text="🔄 Yangilash", callback_data=curr_cb),
+                InlineKeyboardButton(text="⬅ Orqaga",    callback_data=back_cb),
+            )
+            await callback.message.edit_text(  # type: ignore[union-attr]
+                f"{mat_icon} <b>{mat_name}</b> — {char.name}\n\n✅ {len(photos)} ta rasm yuborildi",
+                reply_markup=builder.as_markup(),
+            )
+            return
 
     lines = [f"{mat_icon} <b>{mat_name}</b> — {char.name}\n"]
     for i, r in enumerate(results, 1):

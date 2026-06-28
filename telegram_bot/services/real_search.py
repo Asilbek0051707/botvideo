@@ -8,6 +8,34 @@ from __future__ import annotations
 import asyncio
 from dataclasses import dataclass
 
+IMAGE_MAT_CODES = {"png", "bg", "thumb", "gif"}
+
+
+async def download_images(results: list, limit: int = 4) -> list[tuple[bytes, str]]:
+    """Download image bytes for a list of RealResult. Returns (bytes, title) pairs."""
+    import httpx
+    downloaded: list[tuple[bytes, str]] = []
+    headers = {
+        "User-Agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/124.0.0.0 Safari/537.36"
+        ),
+        "Accept": "image/webp,image/apng,image/*,*/*;q=0.8",
+        "Referer": "https://www.google.com/",
+    }
+    async with httpx.AsyncClient(
+        timeout=10, follow_redirects=True, headers=headers
+    ) as client:
+        for r in results[:limit]:
+            try:
+                resp = await client.get(r.url)
+                if resp.status_code == 200 and len(resp.content) > 2000:
+                    downloaded.append((resp.content, r.title))
+            except Exception:
+                continue
+    return downloaded
+
 
 @dataclass
 class RealResult:

@@ -5,10 +5,13 @@ from __future__ import annotations
 from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
-from aiogram.types import CallbackQuery, Message, InlineKeyboardButton
+from aiogram.types import (
+    BufferedInputFile, CallbackQuery, InputMediaPhoto, Message, InlineKeyboardButton,
+)
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from telegram_bot.keyboards.navigation import add_nav_row, get_nav_keyboard
+from telegram_bot.services.real_search import IMAGE_MAT_CODES
 
 router = Router(name="materials")
 
@@ -136,6 +139,28 @@ async def on_mat_query(message: Message, state: FSMContext) -> None:
         )
         return
 
+    # Image types — download and send as actual photos
+    if mat_code in IMAGE_MAT_CODES:
+        from telegram_bot.services.real_search import download_images
+        await wait_msg.edit_text(f"⬇️ <b>{query}</b> rasmlari yuklanmoqda...")
+        photos = await download_images(results, limit=4)
+        if photos:
+            await wait_msg.delete()
+            media = []
+            for i, (data, title) in enumerate(photos):
+                ext = "gif" if mat_code == "gif" else "png"
+                f = BufferedInputFile(data, filename=f"image_{i+1}.{ext}")
+                cap = f"{mat_label} — <b>{query}</b>" if i == 0 else None
+                media.append(InputMediaPhoto(media=f, caption=cap, parse_mode="HTML"))
+            await message.answer_media_group(media)
+            builder = InlineKeyboardBuilder()
+            builder.button(text="🔄 Qayta qidirish", callback_data=mat_cb)
+            builder.button(text="🏠 Home",           callback_data="menu:main")
+            builder.adjust(2)
+            await message.answer("Yuqoridagi rasmlar:", reply_markup=builder.as_markup())
+            return
+
+    # Non-image types (or image download failed) — show link buttons
     lines = [f"{mat_label} — <b>{query}</b>\n"]
     for i, r in enumerate(results, 1):
         source = f" <i>({r.source})</i>" if r.source else ""
