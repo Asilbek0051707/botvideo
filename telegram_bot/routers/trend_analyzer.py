@@ -354,7 +354,8 @@ async def on_trend_sub(callback: CallbackQuery) -> None:
     )
     await callback.answer()
 
-    results = await search_youtube(query, limit=4)
+    uid = callback.from_user.id if callback.from_user else 0
+    results = await search_youtube(query, limit=4, user_id=uid)
     await _send_yt_results(callback, results, label, back_cb)
 
 
@@ -381,7 +382,10 @@ async def on_country_select(callback: CallbackQuery) -> None:
     )
     await callback.answer()
 
+    from telegram_bot.services.real_search import _user_pick
+    uid = callback.from_user.id if callback.from_user else 0
     results = await scrape_country_trending(code, limit=4)
+    results = _user_pick(results, uid, 4)
     await _send_yt_results(callback, results, f"🌍 {flag_name} Trending", "ta:country_trends")
 
 

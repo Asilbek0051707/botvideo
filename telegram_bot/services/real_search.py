@@ -1,12 +1,33 @@
 """Real web search — ddgs + yt-dlp, no API key needed.
 
 Returns actual results (titles + direct URLs) shown inside the bot.
+Each user gets independently randomised results — results are never cached
+or shared between different Telegram users.
 """
 
 from __future__ import annotations
 
 import asyncio
+import random
+import time
 from dataclasses import dataclass
+
+
+def _user_pick(results: list, user_id: int, count: int) -> list:
+    """Return `count` items from `results` shuffled by user_id + current hour.
+
+    Every user gets a different ordering, and the ordering refreshes every hour
+    so the same user also sees different results on repeat searches.
+    """
+    if not results or count <= 0:
+        return results[:count]
+    if len(results) <= count:
+        return results
+    hour_bucket = int(time.time()) // 3600
+    rng = random.Random(user_id ^ (hour_bucket * 2654435761))
+    pool = list(results)
+    rng.shuffle(pool)
+    return pool[:count]
 
 IMAGE_MAT_CODES = {"png", "bg", "thumb", "gif"}
 VIDEO_MAT_CODES = {"vid", "gs", "anim", "mus", "fx", "sfx", "voice"}
@@ -286,10 +307,10 @@ class RealResult:
 # ─── sync workers ─────────────────────────────────────────────────
 
 def _ddg_images_sync(query: str, limit: int) -> list[RealResult]:
+    """Fetch limit*3 images so callers can pick a personalised subset."""
     try:
         from ddgs import DDGS  # type: ignore
         results = []
-        # Request more results to filter by quality (prefer large/HD images)
         with DDGS() as d:
             for r in d.images(query, max_results=limit * 3):
                 source = r.get("source", "") or r.get("url", "")
@@ -297,9 +318,7 @@ def _ddg_images_sync(query: str, limit: int) -> list[RealResult]:
                 img_url = r.get("image", "") or r.get("url", "")
                 if not img_url:
                     continue
-                # Prefer high-resolution images: width >= 1000 or unknown
                 w = r.get("width", 0)
-                h = r.get("height", 0)
                 if w and w < 500:   # skip tiny images
                     continue
                 results.append(RealResult(
@@ -307,19 +326,18 @@ def _ddg_images_sync(query: str, limit: int) -> list[RealResult]:
                     url=img_url,
                     source=domain,
                 ))
-                if len(results) >= limit:
-                    break
-        return results
+        return results          # return full pool — caller picks via _user_pick
     except Exception:
         return []
 
 
 def _ddg_text_sync(query: str, limit: int) -> list[RealResult]:
+    """Fetch limit*2 text results so callers can pick a personalised subset."""
     try:
         from ddgs import DDGS  # type: ignore
         results = []
         with DDGS() as d:
-            for r in d.text(query, max_results=limit):
+            for r in d.text(query, max_results=limit * 2):
                 url = r.get("href", "")
                 domain = url.split("/")[2] if "//" in url else url
                 snippet = r.get("body", "")[:80]
@@ -335,12 +353,13 @@ def _ddg_text_sync(query: str, limit: int) -> list[RealResult]:
 
 
 def _yt_search_sync(query: str, limit: int) -> list[RealResult]:
+    """Fetch limit*2 YouTube results so callers can pick a personalised subset."""
     try:
         import yt_dlp  # type: ignore
         opts = {"quiet": True, "no_warnings": True,
                 "extract_flat": True, "skip_download": True}
         with yt_dlp.YoutubeDL(opts) as ydl:
-            data = ydl.extract_info(f"ytsearch{limit}:{query}", download=False)
+            data = ydl.extract_info(f"ytsearch{limit * 2}:{query}", download=False)
         results = []
         for e in (data.get("entries") or []):
             if not e or not e.get("id"):
@@ -370,25 +389,33 @@ def _yt_search_sync(query: str, limit: int) -> list[RealResult]:
 
 # ─── async wrappers ───────────────────────────────────────────────
 
-async def search_images(query: str, limit: int = 4) -> list[RealResult]:
-    return await asyncio.to_thread(_ddg_images_sync, query, limit)
+async def search_images(query: str, limit: int = 4, user_id: int = 0) -> list[RealResult]:
+    pool = await asyncio.to_thread(_ddg_images_sync, query, limit)
+    return _user_pick(pool, user_id, limit)
 
-async def search_web(query: str, limit: int = 4) -> list[RealResult]:
-    return await asyncio.to_thread(_ddg_text_sync, query, limit)
+async def search_web(query: str, limit: int = 4, user_id: int = 0) -> list[RealResult]:
+    pool = await asyncio.to_thread(_ddg_text_sync, query, limit)
+    return _user_pick(pool, user_id, limit)
 
-async def search_youtube(query: str, limit: int = 4) -> list[RealResult]:
-    return await asyncio.to_thread(_yt_search_sync, query, limit)
+async def search_youtube(query: str, limit: int = 4, user_id: int = 0) -> list[RealResult]:
+    pool = await asyncio.to_thread(_yt_search_sync, query, limit)
+    return _user_pick(pool, user_id, limit)
 
 
 # ─── material router ──────────────────────────────────────────────
 
-async def search_for_material(query: str, mat_code: str, limit: int = 4) -> list[RealResult]:
-    """Route to the right search backend. Falls back to YouTube if DDG fails."""
+async def search_for_material(
+    query: str,
+    mat_code: str,
+    limit: int = 4,
+    user_id: int = 0,
+) -> list[RealResult]:
+    """Route to the right backend. Each user gets personalised results via user_id."""
 
     async def _with_yt_fallback(ddg_query: str, yt_query: str) -> list[RealResult]:
-        results = await search_images(ddg_query, limit)
+        results = await search_images(ddg_query, limit, user_id)
         if not results:
-            results = await search_youtube(yt_query, limit)
+            results = await search_youtube(yt_query, limit, user_id)
         return results
 
     if mat_code == "png":
@@ -410,52 +437,52 @@ async def search_for_material(query: str, mat_code: str, limit: int = 4) -> list
         )
 
     if mat_code == "gif":
-        results = await search_images(f"{query} animated GIF", limit)
+        results = await search_images(f"{query} animated GIF", limit, user_id)
         if not results:
-            results = await search_web(f"site:giphy.com OR site:tenor.com {query}", limit)
+            results = await search_web(f"site:giphy.com OR site:tenor.com {query}", limit, user_id)
         return results
 
     if mat_code == "gs":
-        return await search_youtube(f"{query} green screen free download", limit)
+        return await search_youtube(f"{query} green screen free download", limit, user_id)
 
     if mat_code == "anim":
-        return await search_youtube(f"{query} animation loop free", limit)
+        return await search_youtube(f"{query} animation loop free", limit, user_id)
 
     if mat_code == "vid":
-        return await search_youtube(f"{query} free stock video", limit)
+        return await search_youtube(f"{query} free stock video", limit, user_id)
 
     if mat_code == "mus":
-        return await search_youtube(f"{query} background music no copyright free", limit)
+        return await search_youtube(f"{query} background music no copyright free", limit, user_id)
 
     if mat_code == "fx":
-        return await search_youtube(f"{query} visual effect VFX free", limit)
+        return await search_youtube(f"{query} visual effect VFX free", limit, user_id)
 
     if mat_code == "sfx":
-        results = await search_web(f"{query} sound effect free download freesound", limit)
+        results = await search_web(f"{query} sound effect free download freesound", limit, user_id)
         if not results:
-            results = await search_youtube(f"{query} sound effect free", limit)
+            results = await search_youtube(f"{query} sound effect free", limit, user_id)
         return results
 
     if mat_code == "voice":
-        results = await search_web(f"{query} AI voice generator free", limit)
+        results = await search_web(f"{query} AI voice generator free", limit, user_id)
         if not results:
-            results = await search_youtube(f"{query} AI voice", limit)
+            results = await search_youtube(f"{query} AI voice", limit, user_id)
         return results
 
     if mat_code == "prompts":
-        results = await search_web(f"{query} Midjourney AI prompt", limit)
+        results = await search_web(f"{query} Midjourney AI prompt", limit, user_id)
         if not results:
-            results = await search_youtube(f"{query} AI image prompt tutorial", limit)
+            results = await search_youtube(f"{query} AI image prompt tutorial", limit, user_id)
         return results
 
     if mat_code == "pack":
-        results = await search_web(f"{query} asset pack free download", limit)
+        results = await search_web(f"{query} asset pack free download", limit, user_id)
         if not results:
-            results = await search_youtube(f"{query} free assets pack", limit)
+            results = await search_youtube(f"{query} free assets pack", limit, user_id)
         return results
 
     # general / search
-    results = await search_web(query, limit)
+    results = await search_web(query, limit, user_id)
     if not results:
-        results = await search_youtube(query, limit)
+        results = await search_youtube(query, limit, user_id)
     return results

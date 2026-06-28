@@ -96,7 +96,7 @@ async def _download_and_send_video(
 
 # ── main kit delivery ──────────────────────────────────────────────
 
-async def _deliver_kit(message: Message, query: str, back_cb: str) -> None:
+async def _deliver_kit(message: Message, query: str, back_cb: str, user_id: int = 0) -> None:
     from telegram_bot.services.real_search import search_for_material, search_youtube
 
     status = await message.answer(
@@ -105,14 +105,14 @@ async def _deliver_kit(message: Message, query: str, back_cb: str) -> None:
         "🔍 Qidirilmoqda..."
     )
 
-    # ── parallel search for all types ──
+    # ── parallel search for all types (personalised by user_id) ──
     (png_r, bg_r, gif_r, gs_r, mus_r, sfx_r) = await asyncio.gather(
-        search_for_material(query, "png",  limit=3),
-        search_for_material(query, "bg",   limit=3),
-        search_for_material(query, "gif",  limit=3),
-        search_youtube(f"{query} green screen free download", limit=2),
-        search_youtube(f"{query} background music no copyright free", limit=3),
-        search_youtube(f"{query} sound effect free", limit=3),
+        search_for_material(query, "png",  limit=3, user_id=user_id),
+        search_for_material(query, "bg",   limit=3, user_id=user_id),
+        search_for_material(query, "gif",  limit=3, user_id=user_id),
+        search_youtube(f"{query} green screen free download", limit=2, user_id=user_id),
+        search_youtube(f"{query} background music no copyright free", limit=3, user_id=user_id),
+        search_youtube(f"{query} sound effect free", limit=3, user_id=user_id),
     )
 
     await status.edit_text(
@@ -230,12 +230,12 @@ async def on_char_video_kit(callback: CallbackQuery) -> None:
     back_cb = f"vidkit:{cat_id}:{char_id}"
     await callback.answer()
 
+    uid = callback.from_user.id if callback.from_user else 0
     await callback.message.edit_text(  # type: ignore[union-attr]
-        f"🎬 <b>{char.name}</b> — Video Kit boshlanmoqda...\n\n"
-        "⏳ Barcha materiallar qidirilmoqda..."
+        f"🎬 <b>{char.name}</b> uchun Video Kit tayyorlanmoqda...",
     )
 
-    await _deliver_kit(callback.message, char.name, back_cb)  # type: ignore[arg-type]
+    await _deliver_kit(callback.message, char.name, back_cb, user_id=uid)  # type: ignore[arg-type]
 
 
 # ── text input handler ────────────────────────────────────────────
@@ -252,4 +252,5 @@ async def on_kit_topic(message: Message, state: FSMContext) -> None:
         await message.answer("❌ Bo'sh so'rov. Qayta urining.")
         return
 
-    await _deliver_kit(message, query, back_cb)
+    uid = message.from_user.id if message.from_user else 0
+    await _deliver_kit(message, query, back_cb, user_id=uid)

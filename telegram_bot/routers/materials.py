@@ -134,9 +134,10 @@ async def on_mat_query(message: Message, state: FSMContext) -> None:
         await message.answer("❌ Bo'sh so'rov. Qayta urinib ko'ring.")
         return
 
+    user_id = message.from_user.id if message.from_user else 0
     wait_msg = await message.answer(f"🔍 <b>{query}</b> qidirilmoqda...")
 
-    results = await search_for_material(query, mat_code, limit=4)
+    results = await search_for_material(query, mat_code, limit=4, user_id=user_id)
 
     if not results:
         await wait_msg.edit_text(

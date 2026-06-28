@@ -224,7 +224,8 @@ async def on_char_material(callback: CallbackQuery) -> None:
     )
     await callback.answer()
 
-    results = await search_for_material(char.name, mat_code, limit=4)
+    user_id = callback.from_user.id if callback.from_user else 0
+    results = await search_for_material(char.name, mat_code, limit=4, user_id=user_id)
 
     if not results:
         await callback.message.edit_text(  # type: ignore[union-attr]
