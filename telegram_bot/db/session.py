@@ -27,6 +27,7 @@ SessionLocal = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False
 
 def init_db() -> None:
     """Create all bot tables (idempotent — safe to call on every startup)."""
-    from telegram_bot.db.models import Base  # noqa: F401
+    from telegram_bot.db.models import Base  # noqa: F401 — registers Project, Favourite
+    from telegram_bot.db import trend_models  # noqa: F401 — registers Trend, TrendKeyword, VideoIdea, TrendSettings
 
     Base.metadata.create_all(bind=engine)

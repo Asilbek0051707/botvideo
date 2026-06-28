@@ -19,6 +19,14 @@ async def on_startup(bot: Bot) -> None:
     except Exception as exc:
         log.warning("telegram.db_init_failed", error=str(exc))
 
+    # Seed default trending keywords (idempotent — skips if already seeded)
+    try:
+        from telegram_bot.services.keyword_service import seed_defaults
+        await seed_defaults()
+        log.info("telegram.keywords_seeded")
+    except Exception as exc:
+        log.warning("telegram.keywords_seed_failed", error=str(exc))
+
     me = await bot.get_me()
     log.info(
         "telegram.started",

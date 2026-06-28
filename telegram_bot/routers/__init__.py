@@ -17,7 +17,9 @@ from telegram_bot.routers import (
     start,
     statistics,
     trend_analyzer,
+    trend_keywords,
     trends,
+    video_ideas,
     video_kit,
 )
 
@@ -29,6 +31,9 @@ def register_routers(dp: Dispatcher) -> None:
     dp.include_router(trends.router)
     dp.include_router(characters.router)
     dp.include_router(materials.router)
+    # Trend Analyzer + sub-routers (order matters: sub-routers first)
+    dp.include_router(video_ideas.router)
+    dp.include_router(trend_keywords.router)
     dp.include_router(trend_analyzer.router)
     dp.include_router(channel_analyzer.router)
     dp.include_router(ai_generator.router)

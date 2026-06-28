@@ -19,17 +19,33 @@ router = Router(name="trend_analyzer")
 
 
 class TrendStates(StatesGroup):
-    waiting_for_viral_topic = State()
+    waiting_for_viral_topic  = State()
+    waiting_for_opps_topic   = State()
 
 
 _ITEMS: list[tuple[str, str]] = [
-    ("🔥 Trending Characters", "ta:trending_chars"),
-    ("🎵 Trending Music",      "ta:trending_music"),
-    ("🎮 Trending Gameplay",   "ta:trending_gameplay"),
-    ("😂 Trending Memes",      "ta:trending_memes"),
-    ("📈 Trending Shorts",     "ta:trending_shorts"),
-    ("🌍 Country Trends",      "ta:country_trends"),
-    ("📊 Viral Score",         "ta:viral_score"),
+    # Row 1 — Characters & Music
+    ("🔥 Trending Characters",  "ta:trending_chars"),
+    ("🎵 Trending Music",        "ta:trending_music"),
+    # Row 2 — Games & Movies
+    ("🎮 Trending Games",        "ta:trending_gameplay"),
+    ("🎬 Trending Movies",       "ta:trending_movies"),
+    # Row 3 — Cartoons & Memes
+    ("📺 Trending Cartoons",     "ta:trending_cartoons"),
+    ("😂 Trending Memes",        "ta:trending_memes"),
+    # Row 4 — Shorts & Country
+    ("📱 Trending Shorts",       "ta:trending_shorts"),
+    ("🌍 Country Trends",        "ta:country_trends"),
+    # Row 5 — Rising & Viral
+    ("📈 Rising Trends",         "ta:rising_trends"),
+    ("⭐ Viral Opportunities",   "ta:viral_opps"),
+    # Row 6 — Keywords & Content
+    ("🏷 Trending Keywords",     "ta:trend_keywords"),
+    ("🎯 Content Opportunities", "ta:content_opps"),
+    # Row 7 — Time-based
+    ("📅 Daily Trends",          "ta:daily_trends"),
+    ("📆 Weekly Trends",         "ta:weekly_trends"),
+    ("🗓 Monthly Trends",        "ta:monthly_trends"),
 ]
 
 _TRENDING_CHARS: list[tuple[str, str]] = [
@@ -89,6 +105,45 @@ _SHORTS_CATS: list[tuple[str, str]] = [
     ("😎 Life Hacks",    "life hacks trending shorts 2024"),
 ]
 
+_MOVIES: list[tuple[str, str]] = [
+    ("🦁 The Wild Robot",      "The Wild Robot movie animation shorts 2024"),
+    ("🐠 Moana 2",             "Moana 2 movie animation shorts"),
+    ("🤠 Despicable Me 4",     "Despicable Me 4 Minions animation shorts"),
+    ("🐼 Kung Fu Panda 4",     "Kung Fu Panda 4 animation shorts 2024"),
+    ("🐈 Puss in Boots 2",     "Puss in Boots Last Wish animation"),
+    ("❄ Frozen 3",             "Frozen 3 Elsa Anna movie shorts"),
+    ("🫧 Inside Out 2",        "Inside Out 2 Pixar animation shorts"),
+    ("🧠 Migration",           "Migration movie ducks animation 2024"),
+    ("🧜 The Little Mermaid",  "Little Mermaid live action movie"),
+    ("🤖 Elemental",           "Elemental Pixar fire water animation"),
+    ("⭐ Wish",                "Wish Disney animation movie shorts"),
+    ("🎪 Trolls 3",            "Trolls Band Together movie shorts"),
+]
+
+_CARTOONS: list[tuple[str, str]] = [
+    ("🐶 PAW Patrol",         "PAW Patrol cartoon shorts trending"),
+    ("🔵 Bluey",              "Bluey cartoon shorts trending 2024"),
+    ("🕷 Spider-Man",         "Spider-Man animated series shorts"),
+    ("🦸 Avengers Assemble",  "Avengers cartoon animated shorts"),
+    ("🐢 TMNT",               "Teenage Mutant Ninja Turtles shorts"),
+    ("🌈 Rainbow Friends",    "Rainbow Friends Roblox cartoon shorts"),
+    ("🎪 Amazing Circus",     "Amazing Digital Circus animation shorts"),
+    ("🐻 Grizzy Bears",       "Grizzy and the Lemmings cartoon"),
+    ("🐣 Peppa Pig",          "Peppa Pig cartoon shorts kids"),
+    ("🦋 Miraculous",         "Miraculous Ladybug cartoon shorts"),
+    ("🤖 Transformers",       "Transformers animated shorts 2024"),
+    ("⚡ Teen Titans",        "Teen Titans Go cartoon shorts"),
+]
+
+_RISING: list[tuple[str, str]] = [
+    ("🚀 Rising This Week",   "rising viral trend this week youtube shorts 2024"),
+    ("🆕 New Viral Chars",    "new character trending viral shorts 2024"),
+    ("📈 Fast Growing",       "fast growing viral youtube channel shorts"),
+    ("💥 Breakout Content",   "breakout viral content youtube shorts 2024"),
+    ("🌟 Underrated Gems",    "underrated viral youtube shorts trending"),
+    ("🎯 Niche Trending",     "niche trending youtube shorts 2024"),
+]
+
 _COUNTRIES: list[tuple[str, str]] = [
     ("🇺🇸 USA",           "US"),
     ("🇬🇧 UK",            "GB"),
@@ -120,6 +175,9 @@ _SUB_MAP: dict[str, list[tuple[str, str]]] = {
     "gameplay": _GAMES,
     "memes":    _MEMES,
     "shorts":   _SHORTS_CATS,
+    "movies":   _MOVIES,
+    "cartoons": _CARTOONS,
+    "rising":   _RISING,
 }
 
 _SUB_PARENT: dict[str, str] = {
@@ -128,6 +186,9 @@ _SUB_PARENT: dict[str, str] = {
     "gameplay": "ta:trending_gameplay",
     "memes":    "ta:trending_memes",
     "shorts":   "ta:trending_shorts",
+    "movies":   "ta:trending_movies",
+    "cartoons": "ta:trending_cartoons",
+    "rising":   "ta:rising_trends",
 }
 
 
@@ -137,7 +198,8 @@ def _ta_keyboard():
     builder = InlineKeyboardBuilder()
     for label, data in _ITEMS:
         builder.button(text=label, callback_data=data)
-    builder.adjust(2)
+    # 15 items → 2 per row (last row has 1)
+    builder.adjust(2, 2, 2, 2, 2, 2, 2, 1)
     add_nav_row(builder, current="menu:trend_analyzer")
     return builder.as_markup()
 
@@ -403,6 +465,8 @@ async def on_viral_score(callback: CallbackQuery, state: FSMContext) -> None:
 
 @router.message(TrendStates.waiting_for_viral_topic)
 async def on_viral_topic(message: Message, state: FSMContext) -> None:
+    from telegram_bot.services.viral_score import calculate as vs_calc
+
     topic = (message.text or "").strip()
     await state.clear()
 
@@ -410,15 +474,178 @@ async def on_viral_topic(message: Message, state: FSMContext) -> None:
         await message.answer("❌ Bo'sh mavzu. Qayta urinib ko'ring.")
         return
 
-    score, verdict, reasons = _calc_viral_score(topic)
+    score, verdict, reasons = vs_calc(topic)
     bar_filled = round(score / 10)
     bar = "█" * bar_filled + "░" * (10 - bar_filled)
     reasons_text = "\n".join(f"  • {r}" for r in reasons) or "  • Asosiy tahlil"
+
+    builder = InlineKeyboardBuilder()
+    builder.button(text="🎯 G'oyalar yaratish", callback_data="ta:video_ideas")
+    builder.button(text="⬅ Orqaga",             callback_data="menu:trend_analyzer")
+    builder.adjust(2)
 
     await message.answer(
         f"📊 <b>Viral Score: {topic}</b>\n\n"
         f"<code>[{bar}]</code> <b>{score}/100</b>\n"
         f"Natija: {verdict}\n\n"
         f"<b>Ball tahlili:</b>\n{reasons_text}",
-        reply_markup=get_nav_keyboard(current="ta:viral_score", parent="menu:trend_analyzer"),
+        reply_markup=builder.as_markup(),
     )
+
+
+# ── NEW: Trending Movies ───────────────────────────────────────────
+
+@router.callback_query(F.data == "ta:trending_movies")
+async def on_trending_movies(callback: CallbackQuery) -> None:
+    await callback.message.edit_text(  # type: ignore[union-attr]
+        "🎬 <b>Trending Movies</b>\n\nFilm tanlang — bot YouTube'dan toping:",
+        reply_markup=_sub_keyboard(_MOVIES, "movies", "ta:trending_movies"),
+    )
+    await callback.answer()
+
+
+# ── NEW: Trending Cartoons ────────────────────────────────────────
+
+@router.callback_query(F.data == "ta:trending_cartoons")
+async def on_trending_cartoons(callback: CallbackQuery) -> None:
+    await callback.message.edit_text(  # type: ignore[union-attr]
+        "📺 <b>Trending Cartoons</b>\n\nMultfilm tanlang:",
+        reply_markup=_sub_keyboard(_CARTOONS, "cartoons", "ta:trending_cartoons"),
+    )
+    await callback.answer()
+
+
+# ── NEW: Rising Trends ────────────────────────────────────────────
+
+@router.callback_query(F.data == "ta:rising_trends")
+async def on_rising_trends(callback: CallbackQuery) -> None:
+    await callback.message.edit_text(  # type: ignore[union-attr]
+        "📈 <b>Rising Trends</b>\n\nO'sib kelayotgan trendni tanlang:",
+        reply_markup=_sub_keyboard(_RISING, "rising", "ta:rising_trends"),
+    )
+    await callback.answer()
+
+
+# ── NEW: Viral Opportunities ──────────────────────────────────────
+
+@router.callback_query(F.data == "ta:viral_opps")
+async def on_viral_opps(callback: CallbackQuery, state: FSMContext) -> None:
+    builder = InlineKeyboardBuilder()
+    builder.button(text="📊 Viral Score hisoblash",   callback_data="ta:viral_score")
+    builder.button(text="🎯 Video g'oyalar yaratish",  callback_data="ta:video_ideas")
+    builder.button(text="🔥 Trending Characters",       callback_data="ta:trending_chars")
+    builder.button(text="🎬 Trending Movies",           callback_data="ta:trending_movies")
+    builder.button(text="📅 Bugungi Trendlar",          callback_data="ta:daily_trends")
+    builder.adjust(1, 2, 2)
+    add_nav_row(builder, current="ta:viral_opps", parent="menu:trend_analyzer")
+
+    # Quick opportunity list
+    opportunities = [
+        "🔥 <b>Spider-Man + Minecraft</b> — ayni paytda viral (Score: ~85)",
+        "📈 <b>Baby + [Karakter]</b> — bolalar auditoriyasi uchun yuqori CTR",
+        "🎬 <b>Inside Out 2 + Emojis</b> — film trend bo'lmoqda",
+        "😂 <b>Skibidi Toilet Evolution</b> — meme format hali kuchli",
+        "🌟 <b>[Karakter] vs [Karakter]</b> — doim ishlaydi, qisqa format",
+    ]
+    text = (
+        "⭐ <b>Viral Opportunities</b>\n\n"
+        "Hozir eng yuqori potentsial g'oyalar:\n\n"
+        + "\n".join(opportunities)
+        + "\n\n💡 <i>Viral Score hisoblash uchun mavzuingizni kiriting</i>"
+    )
+    await callback.message.edit_text(text, reply_markup=builder.as_markup())  # type: ignore[union-attr]
+    await callback.answer()
+
+
+# ── NEW: Content Opportunities ────────────────────────────────────
+
+@router.callback_query(F.data == "ta:content_opps")
+async def on_content_opps(callback: CallbackQuery) -> None:
+    from telegram_bot.services.recommendation_service import get_category_list
+
+    cats = get_category_list()
+    builder = InlineKeyboardBuilder()
+    for cat_id, cat_label in cats:
+        builder.button(text=cat_label, callback_data=f"ta_rec:{cat_id}")
+    builder.adjust(2)
+    add_nav_row(builder, current="ta:content_opps", parent="menu:trend_analyzer")
+
+    await callback.message.edit_text(  # type: ignore[union-attr]
+        "🎯 <b>Content Opportunities</b>\n\n"
+        "Kontent kategoriyasini tanlang —\n"
+        "bot eng yaxshi strategiyani tavsiya qiladi:",
+        reply_markup=builder.as_markup(),
+    )
+    await callback.answer()
+
+
+@router.callback_query(F.data.startswith("ta_rec:"))
+async def on_rec_category(callback: CallbackQuery) -> None:
+    from telegram_bot.services.recommendation_service import get_recommendations
+
+    cat_id = callback.data.split(":", 1)[1]
+    recs = get_recommendations(cat_id)
+
+    lines = [f"🎯 <b>Content Strategy — {cat_id.title()}</b>\n"]
+    for rec in recs:
+        lines.append(f"{rec.label}\n<code>{rec.value}</code>\n💡 {rec.reason}")
+
+    builder = InlineKeyboardBuilder()
+    builder.button(text="🎯 G'oyalar yaratish", callback_data="ta:video_ideas")
+    builder.button(text="⬅ Kategoriyalar",      callback_data="ta:content_opps")
+    builder.adjust(2)
+
+    await callback.message.edit_text(  # type: ignore[union-attr]
+        "\n\n".join(lines), reply_markup=builder.as_markup()
+    )
+    await callback.answer()
+
+
+# ── NEW: Daily Trends ─────────────────────────────────────────────
+
+@router.callback_query(F.data == "ta:daily_trends")
+async def on_daily_trends(callback: CallbackQuery) -> None:
+    from telegram_bot.services.real_search import search_youtube
+
+    await callback.message.edit_text(  # type: ignore[union-attr]
+        "📅 <b>Daily Trends</b>\n\n🔍 Bugungi YouTube trendlar yuklanmoqda..."
+    )
+    await callback.answer()
+
+    uid = callback.from_user.id if callback.from_user else 0
+    results = await search_youtube("trending today viral shorts 2024", limit=4, user_id=uid)
+    await _send_yt_results(callback, results, "📅 Daily Trends — Bugun", "ta:daily_trends")
+
+
+# ── NEW: Weekly Trends ────────────────────────────────────────────
+
+@router.callback_query(F.data == "ta:weekly_trends")
+async def on_weekly_trends(callback: CallbackQuery) -> None:
+    from telegram_bot.services.real_search import search_youtube
+
+    await callback.message.edit_text(  # type: ignore[union-attr]
+        "📆 <b>Weekly Trends</b>\n\n🔍 Bu haftaning YouTube trendlari yuklanmoqda..."
+    )
+    await callback.answer()
+
+    uid = callback.from_user.id if callback.from_user else 0
+    results = await search_youtube("viral this week trending youtube shorts 2024", limit=4, user_id=uid)
+    await _send_yt_results(callback, results, "📆 Weekly Trends — Bu Hafta", "ta:weekly_trends")
+
+
+# ── NEW: Monthly Trends ───────────────────────────────────────────
+
+@router.callback_query(F.data == "ta:monthly_trends")
+async def on_monthly_trends(callback: CallbackQuery) -> None:
+    from telegram_bot.services.real_search import search_youtube
+
+    await callback.message.edit_text(  # type: ignore[union-attr]
+        "🗓 <b>Monthly Trends</b>\n\n🔍 Bu oyning YouTube trendlari yuklanmoqda..."
+    )
+    await callback.answer()
+
+    uid = callback.from_user.id if callback.from_user else 0
+    results = await search_youtube("best viral videos this month 2024 youtube shorts", limit=4, user_id=uid)
+    await _send_yt_results(callback, results, "🗓 Monthly Trends — Bu Oy", "ta:monthly_trends")
+
+
