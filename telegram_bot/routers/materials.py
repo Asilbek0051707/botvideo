@@ -1,15 +1,21 @@
-"""Material Finder router — 📦 browse material types + search providers."""
+"""Material Finder — real search via DuckDuckGo + yt-dlp, results shown in bot."""
 
 from __future__ import annotations
 
 from aiogram import F, Router
-from aiogram.types import CallbackQuery
+from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import State, StatesGroup
+from aiogram.types import CallbackQuery, Message, InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from telegram_bot.keyboards.navigation import add_nav_row, get_nav_keyboard
-from telegram_bot.services.search_service import search_service
 
 router = Router(name="materials")
+
+
+class MatSearchStates(StatesGroup):
+    waiting_for_query = State()
+
 
 _ITEMS: list[tuple[str, str]] = [
     ("🖼 PNG Images",       "mat:png"),
@@ -30,21 +36,21 @@ _ITEMS: list[tuple[str, str]] = [
 
 _LABEL: dict[str, str] = {data: label for label, data in _ITEMS}
 
-_MAT_KEYWORDS: dict[str, str] = {
-    "mat:png":    "transparent PNG",
-    "mat:gs":     "green screen video",
-    "mat:anim":   "animation loop",
-    "mat:gif":    "animated GIF",
-    "mat:vid":    "video clip",
-    "mat:bg":     "background wallpaper",
-    "mat:mus":    "background music",
-    "mat:sfx":    "sound effect",
-    "mat:voice":  "voice sample AI",
-    "mat:fx":     "visual effect particle",
-    "mat:thumb":  "YouTube thumbnail template",
-    "mat:prompts":"AI art prompt",
-    "mat:pack":   "asset pack bundle",
-    "mat:search": "free stock assets",
+_MAT_HINT: dict[str, str] = {
+    "mat:png":    "Masalan: <code>Spider-Man</code> yoki <code>Minecraft Steve</code>",
+    "mat:gs":     "Masalan: <code>Spider-Man</code> yoki <code>Batman</code>",
+    "mat:anim":   "Masalan: <code>Goku animation</code>",
+    "mat:gif":    "Masalan: <code>Sonic running</code>",
+    "mat:vid":    "Masalan: <code>Spider-Man fight scene</code>",
+    "mat:bg":     "Masalan: <code>Minecraft world background</code>",
+    "mat:mus":    "Masalan: <code>epic battle music</code> yoki <code>kids cartoon</code>",
+    "mat:sfx":    "Masalan: <code>sword hit sound</code>",
+    "mat:voice":  "Masalan: <code>Goku voice</code>",
+    "mat:fx":     "Masalan: <code>fire explosion effect</code>",
+    "mat:thumb":  "Masalan: <code>Spider-Man thumbnail</code>",
+    "mat:prompts":"Masalan: <code>Spider-Man Midjourney prompt</code>",
+    "mat:pack":   "Masalan: <code>cartoon character pack</code>",
+    "mat:search": "Nima qidiryapsiz?",
 }
 
 
@@ -57,47 +63,86 @@ def _materials_keyboard():
     return builder.as_markup()
 
 
-def _provider_keyboard(mat_cb: str, keyword: str):
-    """Provider URL buttons for a generic material search (no character)."""
-    from telegram_bot.services.providers.stubs import _MAT_MODIFIERS
-    mat_code = mat_cb.split(":")[1]
+def _results_keyboard(results, current: str):
     builder = InlineKeyboardBuilder()
-    for label, url in search_service.build_links(keyword, mat_code):
-        builder.button(text=label, url=url)
+    for i, r in enumerate(results, 1):
+        label = f"{i}. {r.title[:35]}{'…' if len(r.title) > 35 else ''}"
+        builder.button(text=label, url=r.url)
     builder.adjust(1)
-    add_nav_row(builder, current=mat_cb, parent="menu:materials")
+    builder.row(
+        InlineKeyboardButton(text="🔄 Qayta qidirish", callback_data=current),
+        InlineKeyboardButton(text="🏠 Home",           callback_data="menu:main"),
+    )
     return builder.as_markup()
 
+
+# ── main grid ─────────────────────────────────────────────────────
 
 @router.callback_query(F.data == "menu:materials")
 async def on_materials(callback: CallbackQuery) -> None:
     await callback.message.edit_text(  # type: ignore[union-attr]
-        "📦 <b>Material Finder</b>\n\nChoose material type:",
+        "📦 <b>Material Finder</b>\n\nMaterial turini tanlang:",
         reply_markup=_materials_keyboard(),
     )
     await callback.answer()
 
 
-@router.callback_query(F.data.startswith("mat:"))
-async def on_material_item(callback: CallbackQuery) -> None:
-    label = _LABEL.get(callback.data, "Material")
-    keyword = _MAT_KEYWORDS.get(callback.data, "asset")
-    mat_code = callback.data.split(":")[1]
+# ── material type selected → ask query ───────────────────────────
 
-    # AI Prompts is information-only for now
-    if mat_code == "prompts":
-        await callback.message.edit_text(  # type: ignore[union-attr]
-            "🎨 <b>AI Prompts</b>\n\n"
-            "For character-specific AI prompts, open a character page and tap <b>🎨 AI Prompts</b>.",
-            reply_markup=get_nav_keyboard(current=callback.data, parent="menu:materials"),
-        )
-        await callback.answer()
-        return
+@router.callback_query(F.data.startswith("mat:"))
+async def on_material_item(callback: CallbackQuery, state: FSMContext) -> None:
+    mat_cb = callback.data
+    label = _LABEL.get(mat_cb, "Material")
+    mat_code = mat_cb.split(":")[1]
+    hint = _MAT_HINT.get(mat_cb, "Qidiruv so'zini yozing:")
+
+    await state.set_state(MatSearchStates.waiting_for_query)
+    await state.update_data(mat_code=mat_code, mat_label=label, mat_cb=mat_cb)
 
     await callback.message.edit_text(  # type: ignore[union-attr]
         f"{label}\n\n"
-        f"🔍 Search for: <b>{keyword}</b>\n\n"
-        "Choose a provider — each button opens in your browser:",
-        reply_markup=_provider_keyboard(callback.data, keyword),
+        f"🔍 Nima qidiramiz?\n\n"
+        f"{hint}"
     )
     await callback.answer()
+
+
+# ── user types query → real search → show results ─────────────────
+
+@router.message(MatSearchStates.waiting_for_query)
+async def on_mat_query(message: Message, state: FSMContext) -> None:
+    from telegram_bot.services.real_search import search_for_material
+
+    data = await state.get_data()
+    await state.clear()
+
+    query = (message.text or "").strip()
+    mat_code = data.get("mat_code", "search")
+    mat_label = data.get("mat_label", "Material")
+    mat_cb = data.get("mat_cb", "menu:materials")
+
+    if not query:
+        await message.answer("❌ Bo'sh so'rov. Qayta urinib ko'ring.")
+        return
+
+    wait_msg = await message.answer(f"🔍 <b>{query}</b> qidirilmoqda...")
+
+    results = await search_for_material(query, mat_code, limit=4)
+
+    if not results:
+        await wait_msg.edit_text(
+            f"❌ <b>{query}</b> bo'yicha natija topilmadi.\n\nBoshqa kalit so'z bilan urining.",
+            reply_markup=get_nav_keyboard(mat_cb, "menu:materials"),
+        )
+        return
+
+    lines = [f"{mat_label} — <b>{query}</b>\n"]
+    for i, r in enumerate(results, 1):
+        source = f" <i>({r.source})</i>" if r.source else ""
+        extra = f"\n   {r.extra}" if r.extra else ""
+        lines.append(f"{i}. <b>{r.title}</b>{source}{extra}")
+
+    await wait_msg.edit_text(
+        "\n".join(lines),
+        reply_markup=_results_keyboard(results, mat_cb),
+    )

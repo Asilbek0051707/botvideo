@@ -36,6 +36,7 @@ dependencies = [
   "aiogram>=3.13",
   "psutil>=5.9",
   "yt-dlp>=2023.1",
+  "ddgs>=0.1",
 ]
 
 [project.optional-dependencies]

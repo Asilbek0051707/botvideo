@@ -201,6 +201,8 @@ async def on_char_material(callback: CallbackQuery) -> None:
         await _show_video_ideas(callback, cat_id, char_id)
         return
 
+    from telegram_bot.services.real_search import search_for_material
+
     char = char_service.get_character(cat_id, char_id)
     if not char:
         await callback.answer("Not found", show_alert=True)
@@ -208,17 +210,45 @@ async def on_char_material(callback: CallbackQuery) -> None:
 
     mat_name = _MAT_NAMES.get(mat_code, mat_code)
     mat_icon = _MAT_ICONS.get(mat_code, "📦")
+    back_cb = f"char:{cat_id}:{char_id}"
+    curr_cb = f"charmat:{mat_code}:{cat_id}:{char_id}"
 
-    text = (
-        f"{mat_icon} <b>{mat_name}</b> — {char.name}\n\n"
-        "Choose a search provider.\n"
-        "Each button opens the search in your browser:"
-    )
     await callback.message.edit_text(  # type: ignore[union-attr]
-        text,
-        reply_markup=_material_search_keyboard(char.name, mat_code, cat_id, char_id),
+        f"{mat_icon} <b>{mat_name}</b> — {char.name}\n\n🔍 Qidirilmoqda..."
     )
     await callback.answer()
+
+    results = await search_for_material(char.name, mat_code, limit=4)
+
+    if not results:
+        await callback.message.edit_text(  # type: ignore[union-attr]
+            f"{mat_icon} <b>{mat_name}</b> — {char.name}\n\n"
+            "❌ Natija topilmadi. Keyinroq urinib ko'ring.",
+            reply_markup=get_nav_keyboard(curr_cb, back_cb),
+        )
+        return
+
+    lines = [f"{mat_icon} <b>{mat_name}</b> — {char.name}\n"]
+    for i, r in enumerate(results, 1):
+        src = f" <i>({r.source})</i>" if r.source else ""
+        extra = f"\n   {r.extra}" if r.extra else ""
+        lines.append(f"{i}. <b>{r.title}</b>{src}{extra}")
+
+    # Build results keyboard
+    builder = InlineKeyboardBuilder()
+    for i, r in enumerate(results, 1):
+        label = f"{i}. {r.title[:35]}{'…' if len(r.title) > 35 else ''}"
+        builder.button(text=label, url=r.url)
+    builder.adjust(1)
+    builder.row(
+        InlineKeyboardButton(text="🔄 Yangilash", callback_data=curr_cb),
+        InlineKeyboardButton(text="⬅ Orqaga",   callback_data=back_cb),
+    )
+
+    await callback.message.edit_text(  # type: ignore[union-attr]
+        "\n".join(lines),
+        reply_markup=builder.as_markup(),
+    )
 
 
 # ── AI prompts page ───────────────────────────────────────────────
