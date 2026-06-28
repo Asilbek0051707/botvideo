@@ -258,17 +258,52 @@ async def on_char_material(callback: CallbackQuery) -> None:
             )
             return
 
+    # Video types — show YouTube thumbnails as photo album
+    from telegram_bot.services.real_search import VIDEO_MAT_CODES, download_yt_thumbnails
+    if mat_code in VIDEO_MAT_CODES:
+        await callback.message.edit_text(  # type: ignore[union-attr]
+            f"{mat_icon} <b>{mat_name}</b> — {char.name}\n\n⬇️ Video ko'rinishlar yuklanmoqda..."
+        )
+        yt_photos = await download_yt_thumbnails(results, limit=4)
+        if yt_photos:
+            media = []
+            for i, (data, r) in enumerate(yt_photos):
+                if i == 0:
+                    cap = f"{mat_icon} <b>{mat_name}</b> — {char.name}\n<i>{r.title}</i>"
+                else:
+                    cap = f"<i>{r.title}</i>"
+                if r.extra:
+                    cap += f"\n{r.extra}"
+                media.append(InputMediaPhoto(
+                    media=BufferedInputFile(data, filename=f"vid_{i}.jpg"),
+                    caption=cap,
+                    parse_mode="HTML",
+                ))
+            await callback.message.answer_media_group(media)  # type: ignore[union-attr]
+            builder = InlineKeyboardBuilder()
+            for i, (_, r) in enumerate(yt_photos, 1):
+                builder.button(text=f"▶️ {i}. Ko'rish", url=r.url)
+            builder.adjust(2)
+            builder.row(
+                InlineKeyboardButton(text="🔄 Yangilash", callback_data=curr_cb),
+                InlineKeyboardButton(text="⬅ Orqaga",    callback_data=back_cb),
+            )
+            await callback.message.edit_text(  # type: ignore[union-attr]
+                f"{mat_icon} <b>{mat_name}</b> — {char.name}\n\n✅ {len(yt_photos)} ta video topildi:",
+                reply_markup=builder.as_markup(),
+            )
+            return
+
+    # Text/link fallback
     lines = [f"{mat_icon} <b>{mat_name}</b> — {char.name}\n"]
     for i, r in enumerate(results, 1):
         src = f" <i>({r.source})</i>" if r.source else ""
         extra = f"\n   {r.extra}" if r.extra else ""
         lines.append(f"{i}. <b>{r.title}</b>{src}{extra}")
 
-    # Build results keyboard
     builder = InlineKeyboardBuilder()
     for i, r in enumerate(results, 1):
-        label = f"{i}. {r.title[:35]}{'…' if len(r.title) > 35 else ''}"
-        builder.button(text=label, url=r.url)
+        builder.button(text=f"{i}. {r.title[:35]}{'…' if len(r.title) > 35 else ''}", url=r.url)
     builder.adjust(1)
     builder.row(
         InlineKeyboardButton(text="🔄 Yangilash", callback_data=curr_cb),

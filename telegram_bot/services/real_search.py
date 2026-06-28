@@ -9,6 +9,7 @@ import asyncio
 from dataclasses import dataclass
 
 IMAGE_MAT_CODES = {"png", "bg", "thumb", "gif"}
+VIDEO_MAT_CODES = {"vid", "gs", "anim", "mus", "fx", "sfx", "voice"}
 
 
 async def download_images(results: list, limit: int = 4) -> list[tuple[bytes, str]]:
@@ -35,6 +36,109 @@ async def download_images(results: list, limit: int = 4) -> list[tuple[bytes, st
             except Exception:
                 continue
     return downloaded
+
+
+async def download_yt_thumbnails(results: list, limit: int = 4) -> list[tuple[bytes, object]]:
+    """Download YouTube video thumbnails. Returns (jpg_bytes, RealResult) pairs."""
+    import re, httpx
+    downloaded: list[tuple[bytes, object]] = []
+    async with httpx.AsyncClient(timeout=10, follow_redirects=True) as client:
+        for r in results[:limit]:
+            vid_id: str | None = None
+            if "youtu.be/" in r.url:
+                vid_id = r.url.split("youtu.be/")[-1][:11]
+            else:
+                m = re.search(r"[?&]v=([\w-]{11})", r.url)
+                if m:
+                    vid_id = m.group(1)
+            if not vid_id:
+                continue
+            try:
+                resp = await client.get(
+                    f"https://img.youtube.com/vi/{vid_id}/hqdefault.jpg"
+                )
+                if resp.status_code == 200 and len(resp.content) > 5_000:
+                    downloaded.append((resp.content, r))
+            except Exception:
+                continue
+    return downloaded
+
+
+def _scrape_country_trending_sync(country_code: str, limit: int = 4) -> list:
+    try:
+        import yt_dlp  # type: ignore
+        url = f"https://www.youtube.com/feed/trending?gl={country_code}"
+        opts = {
+            "quiet": True, "no_warnings": True, "extract_flat": True,
+            "playlistend": limit + 4, "skip_download": True, "ignoreerrors": True,
+        }
+        with yt_dlp.YoutubeDL(opts) as ydl:
+            data = ydl.extract_info(url, download=False) or {}
+        results = []
+        for e in (data.get("entries") or []):
+            if not e or not e.get("id"):
+                continue
+            views = e.get("view_count")
+            dur = e.get("duration")
+            extra_parts: list[str] = []
+            if views:
+                extra_parts.append(
+                    f"👁 {views/1_000_000:.1f}M" if views >= 1_000_000
+                    else f"👁 {views/1_000:.0f}K"
+                )
+            if dur:
+                mm, ss = divmod(int(dur), 60)
+                extra_parts.append(f"⏱ {mm}:{ss:02d}")
+            results.append(RealResult(
+                title=(e.get("title") or "")[:60],
+                url=f"https://youtu.be/{e['id']}",
+                source="youtube.com",
+                extra=" · ".join(extra_parts),
+            ))
+        return results[:limit]
+    except Exception:
+        return []
+
+
+async def scrape_country_trending(country_code: str, limit: int = 4) -> list:
+    return await asyncio.to_thread(_scrape_country_trending_sync, country_code, limit)
+
+
+def _search_competitors_sync(niche: str, limit: int = 4) -> list[dict]:
+    """Search YouTube and return top unique channels for a niche."""
+    try:
+        import yt_dlp  # type: ignore
+        opts = {
+            "quiet": True, "no_warnings": True, "extract_flat": True,
+            "playlistend": 12, "skip_download": True, "ignoreerrors": True,
+        }
+        with yt_dlp.YoutubeDL(opts) as ydl:
+            data = ydl.extract_info(f"ytsearch12:{niche}", download=False) or {}
+        seen: set[str] = set()
+        channels: list[dict] = []
+        for e in (data.get("entries") or []):
+            if not e:
+                continue
+            cid = e.get("channel_id", "")
+            if not cid or cid in seen:
+                continue
+            seen.add(cid)
+            subs = e.get("channel_follower_count")
+            channels.append({
+                "name": e.get("channel") or e.get("uploader") or "—",
+                "url": e.get("channel_url") or f"https://youtube.com/channel/{cid}",
+                "subs": subs,
+                "video_id": e.get("id"),
+            })
+            if len(channels) >= limit:
+                break
+        return channels
+    except Exception:
+        return []
+
+
+async def search_competitors(niche: str, limit: int = 4) -> list[dict]:
+    return await asyncio.to_thread(_search_competitors_sync, niche, limit)
 
 
 @dataclass

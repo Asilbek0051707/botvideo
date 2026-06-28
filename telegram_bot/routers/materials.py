@@ -160,7 +160,38 @@ async def on_mat_query(message: Message, state: FSMContext) -> None:
             await message.answer("Yuqoridagi rasmlar:", reply_markup=builder.as_markup())
             return
 
-    # Non-image types (or image download failed) — show link buttons
+    # Video types — download YouTube thumbnails and send as photo album
+    from telegram_bot.services.real_search import VIDEO_MAT_CODES, download_yt_thumbnails
+    if mat_code in VIDEO_MAT_CODES:
+        await wait_msg.edit_text(f"⬇️ <b>{query}</b> — video ko'rinishlar yuklanmoqda...")
+        yt_photos = await download_yt_thumbnails(results, limit=4)
+        if yt_photos:
+            await wait_msg.delete()
+            media = []
+            for i, (data, r) in enumerate(yt_photos):
+                if i == 0:
+                    cap = f"{mat_label} — <b>{query}</b>\n<i>{r.title}</i>"
+                else:
+                    cap = f"<i>{r.title}</i>"
+                if r.extra:
+                    cap += f"\n{r.extra}"
+                media.append(InputMediaPhoto(
+                    media=BufferedInputFile(data, filename=f"vid_{i+1}.jpg"),
+                    caption=cap,
+                    parse_mode="HTML",
+                ))
+            await message.answer_media_group(media)
+            builder = InlineKeyboardBuilder()
+            for i, (_, r) in enumerate(yt_photos, 1):
+                builder.button(text=f"▶️ {i}. Ko'rish", url=r.url)
+            builder.adjust(2)
+            builder.button(text="🔄 Qayta qidirish", callback_data=mat_cb)
+            builder.button(text="🏠 Home",           callback_data="menu:main")
+            builder.adjust(2)
+            await message.answer("Videolarni ko'rish:", reply_markup=builder.as_markup())
+            return
+
+    # Fallback — show link buttons
     lines = [f"{mat_label} — <b>{query}</b>\n"]
     for i, r in enumerate(results, 1):
         source = f" <i>({r.source})</i>" if r.source else ""

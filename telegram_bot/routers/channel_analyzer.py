@@ -1,11 +1,13 @@
-"""Channel Analyzer — in-bot analytics via yt-dlp (no API key needed)."""
+"""Channel Analyzer — all analytics shown inside the bot via yt-dlp."""
 
 from __future__ import annotations
 
 from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
-from aiogram.types import CallbackQuery, Message
+from aiogram.types import (
+    BufferedInputFile, CallbackQuery, InlineKeyboardButton, InputMediaPhoto, Message,
+)
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from telegram_bot.keyboards.navigation import add_nav_row, get_nav_keyboard
@@ -14,9 +16,10 @@ router = Router(name="channel_analyzer")
 
 
 class ChannelStates(StatesGroup):
-    waiting_for_channel = State()
-    waiting_for_video = State()
-    waiting_for_niche = State()
+    waiting_for_channel    = State()
+    waiting_for_video      = State()
+    waiting_for_niche      = State()
+    waiting_for_stats_ch   = State()
 
 
 _ITEMS: list[tuple[str, str]] = [
@@ -28,8 +31,6 @@ _ITEMS: list[tuple[str, str]] = [
     ("📊 Stats Asboblar",    "ca:statistics"),
 ]
 
-_LABEL: dict[str, str] = {data: label for label, data in _ITEMS}
-
 _GROWTH_TIPS = [
     "📅 Haftada 3–5 Shorts yuklang — muntazamlik asosiy",
     "🎯 Bitta mavzuga yopishing — algoritm tezroq taniydi",
@@ -39,9 +40,41 @@ _GROWTH_TIPS = [
     "💬 Dastlabki 24 soatda har bir izohga javob bering",
     "🔄 Uzun video → 5–10 ta Shorts klip qiling",
     "📊 Auditoriyangiz onlayn bo'lgan vaqtda yuklang",
-    "🤝 O'zingiz bilan bir niche'dagi kanallar bilan hamkorlik",
+    "🤝 O'z nichengizda kanallar bilan hamkorlik qiling",
     "📈 End screen + pinned comment = +30% ko'rish vaqti",
+    "🎙 Ovozli tavsif + subtitle = SEO +40%",
+    "🔁 Eng yaxshi videolaringizni yangi trending bilan qayta qiling",
+    "📌 Kanal tavsifida asosiy kalit so'zlarni ishlating",
+    "⏰ Yuklash vaqti: Seshanba–Payshanba 12:00–15:00 eng yaxshi",
+    "📢 Community post → videogacha hype yarating",
 ]
+
+_THUMBNAIL_RULES = """🖼 <b>Thumbnail Qoidalari</b>
+
+<b>📐 Texnik talablar:</b>
+• O'lcham: <b>1280×720px</b> (16:9)
+• Fayl formati: JPG, PNG, GIF, BMP
+• Hajm: <b>2 MB dan kam</b>
+
+<b>🎨 Dizayn qoidalari:</b>
+• Matn: <b>6 so'zdan kam</b>, katta shrift (min 60pt)
+• Rang kontrasti yuqori bo'lsin (oq/qora, sariq/qora)
+• Yuz ifodasi: CTR ni <b>+38%</b> oshiradi
+• Burchaklarda matn bo'lmasin (mobilda kesiladi)
+• Asosiy element markazda yoki 1/3 qoidasida
+
+<b>🔥 CTR oshirish sirlari:</b>
+• Qizil/sariq ranglar e'tiborni jalb qiladi
+• Raqamlar ishlatish (<b>5 ta sir</b>, <b>1 million</b>)
+• Savol yoki shok ifodasi qo'shing
+• A/B test qiling (YouTube Studio → Analytics)
+• Birinchi 48 soat CTR ni kuzating
+
+<b>❌ Qilmang:</b>
+• Kichik matn (mobilda o'qilmaydi)
+• Juda ko'p element (tartibsiz ko'rinadi)
+• Clickbait (uzoq muddatda zararli)
+• Thumbnail va title bir xil bo'lmasin"""
 
 
 def _ca_keyboard():
@@ -51,6 +84,16 @@ def _ca_keyboard():
     builder.adjust(2)
     add_nav_row(builder, current="menu:channel_analyzer")
     return builder.as_markup()
+
+
+def _fmt_subs(n: int | None) -> str:
+    if n is None:
+        return "Yashirin"
+    if n >= 1_000_000:
+        return f"{n/1_000_000:.1f}M"
+    if n >= 1_000:
+        return f"{n/1_000:.1f}K"
+    return str(n)
 
 
 # ── main grid ─────────────────────────────────────────────────────
@@ -89,20 +132,18 @@ async def on_channel_input(message: Message, state: FSMContext) -> None:
         return
 
     wait_msg = await message.answer("🔍 Kanal ma'lumotlari yuklanmoqda...")
-
     try:
         ch = await get_channel(raw)
     except Exception as e:
         await wait_msg.edit_text(
-            f"❌ Xatolik yuz berdi: {e}\n\nQayta urining.",
+            f"❌ Xatolik: {e}\n\nQayta urining.",
             reply_markup=get_nav_keyboard("ca:channel", "menu:channel_analyzer"),
         )
         return
 
     if not ch:
         await wait_msg.edit_text(
-            f"❌ <b>{raw}</b> — kanal topilmadi.\n\n"
-            "To'g'ri @username yoki URL kiriting.",
+            f"❌ <b>{raw}</b> — kanal topilmadi.\n\nTo'g'ri @username yoki URL kiriting.",
             reply_markup=get_nav_keyboard("ca:channel", "menu:channel_analyzer"),
         )
         return
@@ -112,10 +153,7 @@ async def on_channel_input(message: Message, state: FSMContext) -> None:
     builder.adjust(1)
     add_nav_row(builder, current="ca:channel", parent="menu:channel_analyzer")
 
-    await wait_msg.edit_text(
-        format_channel(ch),
-        reply_markup=builder.as_markup(),
-    )
+    await wait_msg.edit_text(format_channel(ch), reply_markup=builder.as_markup())
 
 
 # ── Video tahlili ─────────────────────────────────────────────────
@@ -143,7 +181,6 @@ async def on_video_input(message: Message, state: FSMContext) -> None:
         return
 
     wait_msg = await message.answer("🔍 Video ma'lumotlari yuklanmoqda...")
-
     try:
         v = await get_video(raw)
     except Exception as e:
@@ -160,11 +197,30 @@ async def on_video_input(message: Message, state: FSMContext) -> None:
         )
         return
 
+    # Download video thumbnail and send as photo
+    import httpx
+    try:
+        async with httpx.AsyncClient(timeout=8) as client:
+            resp = await client.get(
+                f"https://img.youtube.com/vi/{v.video_id}/hqdefault.jpg"
+            )
+        if resp.status_code == 200 and len(resp.content) > 5000:
+            builder = InlineKeyboardBuilder()
+            builder.button(text="▶️ YouTube'da ko'rish", url=f"https://youtu.be/{v.video_id}")
+            builder.adjust(1)
+            add_nav_row(builder, current="ca:video", parent="menu:channel_analyzer")
+            photo = BufferedInputFile(resp.content, filename="thumb.jpg")
+            await message.answer_photo(photo, caption=format_video(v), parse_mode="HTML",
+                                       reply_markup=builder.as_markup())
+            await wait_msg.delete()
+            return
+    except Exception:
+        pass
+
     builder = InlineKeyboardBuilder()
     builder.button(text="▶️ YouTube'da ko'rish", url=f"https://youtu.be/{v.video_id}")
     builder.adjust(1)
     add_nav_row(builder, current="ca:video", parent="menu:channel_analyzer")
-
     await wait_msg.edit_text(format_video(v), reply_markup=builder.as_markup())
 
 
@@ -172,27 +228,9 @@ async def on_video_input(message: Message, state: FSMContext) -> None:
 
 @router.callback_query(F.data == "ca:thumbnail")
 async def on_thumbnail(callback: CallbackQuery) -> None:
-    builder = InlineKeyboardBuilder()
-    for label, url in [
-        ("🎨 Canva",         "https://www.canva.com/create/youtube-thumbnails/"),
-        ("✏️ Adobe Express", "https://www.adobe.com/express/create/thumbnail/youtube"),
-        ("🎭 Fotor",         "https://www.fotor.com/features/youtube-thumbnail-maker/"),
-        ("🖼 Freepik",       "https://www.freepik.com/search?query=youtube+thumbnail&type=psd"),
-    ]:
-        builder.button(text=label, url=url)
-    builder.adjust(1)
-    add_nav_row(builder, current="ca:thumbnail", parent="menu:channel_analyzer")
-
     await callback.message.edit_text(  # type: ignore[union-attr]
-        "🖼 <b>Thumbnail Qoidalari</b>\n\n"
-        "✅ O'lcham: <b>1280×720px</b> (16:9)\n"
-        "✅ Fayl hajmi: <b>2 MB dan kam</b>\n"
-        "✅ Matn: <b>maksimal 6 so'z</b>, katta shrift\n"
-        "✅ Yuqori kontrast ranglar\n"
-        "✅ Yuz ifodasi (CTR +38% oshiradi)\n"
-        "✅ Burchaklarda matn yo'q (mobilda kesiladi)\n\n"
-        "Dizayn asboblari:",
-        reply_markup=builder.as_markup(),
+        _THUMBNAIL_RULES,
+        reply_markup=get_nav_keyboard("ca:thumbnail", "menu:channel_analyzer"),
     )
     await callback.answer()
 
@@ -205,14 +243,16 @@ async def on_competitors(callback: CallbackQuery, state: FSMContext) -> None:
     await callback.message.edit_text(  # type: ignore[union-attr]
         "🏆 <b>Raqiblar Tahlili</b>\n\n"
         "Kanal yo'nalishi yoki mavzusini yozing:\n\n"
-        "Misol: <code>Minecraft kids animation</code>"
+        "Misol: <code>Minecraft kids animation</code>\n"
+        "Yoki: <code>Spider-Man shorts Uzbek</code>"
     )
     await callback.answer()
 
 
 @router.message(ChannelStates.waiting_for_niche)
 async def on_niche_input(message: Message, state: FSMContext) -> None:
-    from urllib.parse import quote_plus
+    from telegram_bot.services.real_search import search_competitors, download_yt_thumbnails, search_youtube
+
     niche = (message.text or "").strip()
     await state.clear()
 
@@ -220,24 +260,60 @@ async def on_niche_input(message: Message, state: FSMContext) -> None:
         await message.answer("❌ Bo'sh. Qayta urining.")
         return
 
-    q = quote_plus(niche)
+    wait_msg = await message.answer(f"🏆 <b>{niche}</b> yo'nalishidagi raqiblar qidirilmoqda...")
+
+    channels = await search_competitors(niche, limit=4)
+
+    if not channels:
+        await wait_msg.edit_text(
+            f"❌ <b>{niche}</b> bo'yicha kanal topilmadi.\n\nBoshqa kalit so'z sinab ko'ring.",
+            reply_markup=get_nav_keyboard("ca:competitors", "menu:channel_analyzer"),
+        )
+        return
+
+    # Get thumbnails from one video per channel
+    from telegram_bot.services.real_search import RealResult
+    pseudo_results = []
+    for ch in channels:
+        if ch.get("video_id"):
+            pseudo_results.append(RealResult(
+                title=ch["name"],
+                url=f"https://youtu.be/{ch['video_id']}",
+                source="youtube.com",
+                extra=_fmt_subs(ch.get("subs")),
+            ))
+
+    photos = await download_yt_thumbnails(pseudo_results, limit=4)
+
+    # Build text
+    lines = [f"🏆 <b>Raqiblar: {niche}</b>\n"]
+    for i, ch in enumerate(channels, 1):
+        subs = _fmt_subs(ch.get("subs"))
+        lines.append(f"{i}. <b>{ch['name']}</b> — {subs} obunachi")
+
+    text = "\n".join(lines)
+
+    if photos:
+        media = []
+        for i, (data, r) in enumerate(photos):
+            cap = text if i == 0 else f"<b>{r.title}</b>"
+            media.append(InputMediaPhoto(
+                media=BufferedInputFile(data, f"ch_{i}.jpg"),
+                caption=cap,
+                parse_mode="HTML",
+            ))
+        await message.answer_media_group(media)
+        await wait_msg.delete()
+    else:
+        await wait_msg.edit_text(text, parse_mode="HTML")
+
     builder = InlineKeyboardBuilder()
-    builder.button(
-        text="🔍 YouTube'da qidirish",
-        url=f"https://www.youtube.com/results?search_query={q}&sp=CAM%253D"
-    )
-    builder.button(
-        text="📊 Noxinfluencer",
-        url=f"https://www.noxinfluencer.com/youtube/search?keyword={q}"
-    )
+    for ch in channels[:4]:
+        name = ch["name"][:28]
+        builder.button(text=f"📺 {name}", url=ch["url"])
     builder.adjust(1)
     add_nav_row(builder, current="ca:competitors", parent="menu:channel_analyzer")
-
-    await message.answer(
-        f"🏆 <b>Raqiblar: {niche}</b>\n\n"
-        "Shu yo'nalishdagi top kanallarni toping:",
-        reply_markup=builder.as_markup(),
-    )
+    await message.answer("Kanallarga o'tish:", reply_markup=builder.as_markup())
 
 
 # ── O'sish maslahatlar ────────────────────────────────────────────
@@ -245,14 +321,9 @@ async def on_niche_input(message: Message, state: FSMContext) -> None:
 @router.callback_query(F.data == "ca:growth")
 async def on_growth(callback: CallbackQuery) -> None:
     tips = "\n".join(f"{i+1}. {t}" for i, t in enumerate(_GROWTH_TIPS))
-    builder = InlineKeyboardBuilder()
-    builder.button(text="📈 YouTube Creator Academy", url="https://creatoracademy.youtube.com/")
-    builder.adjust(1)
-    add_nav_row(builder, current="ca:growth", parent="menu:channel_analyzer")
-
     await callback.message.edit_text(  # type: ignore[union-attr]
         f"📈 <b>O'sish Maslahatlar</b>\n\n{tips}",
-        reply_markup=builder.as_markup(),
+        reply_markup=get_nav_keyboard("ca:growth", "menu:channel_analyzer"),
     )
     await callback.answer()
 
@@ -260,23 +331,70 @@ async def on_growth(callback: CallbackQuery) -> None:
 # ── Stats asboblar ────────────────────────────────────────────────
 
 @router.callback_query(F.data == "ca:statistics")
-async def on_statistics(callback: CallbackQuery) -> None:
+async def on_statistics(callback: CallbackQuery, state: FSMContext) -> None:
+    await state.set_state(ChannelStates.waiting_for_stats_ch)
+    await callback.message.edit_text(  # type: ignore[union-attr]
+        "📊 <b>Stats Asboblar</b>\n\n"
+        "Tahlil qilmoqchi bo'lgan kanal @username yoki URL ini yozing:\n\n"
+        "Misol: <code>@MrBeast</code>\n\n"
+        "Bot barcha statistikani hozir ko'rsatadi:"
+    )
+    await callback.answer()
+
+
+@router.message(ChannelStates.waiting_for_stats_ch)
+async def on_stats_channel(message: Message, state: FSMContext) -> None:
+    from telegram_bot.services.youtube_service import get_channel, format_channel
+    raw = (message.text or "").strip()
+    await state.clear()
+
+    if not raw:
+        await message.answer("❌ Bo'sh. Qayta urining.")
+        return
+
+    wait_msg = await message.answer("📊 Statistika yuklanmoqda...")
+    try:
+        ch = await get_channel(raw)
+    except Exception as e:
+        await wait_msg.edit_text(
+            f"❌ Xatolik: {e}",
+            reply_markup=get_nav_keyboard("ca:statistics", "menu:channel_analyzer"),
+        )
+        return
+
+    if not ch:
+        await wait_msg.edit_text(
+            f"❌ <b>{raw}</b> — topilmadi.",
+            reply_markup=get_nav_keyboard("ca:statistics", "menu:channel_analyzer"),
+        )
+        return
+
+    # Enhanced stats view
+    views_per_vid = (ch.view_count // ch.video_count) if ch.video_count else 0
+    lines = [
+        f"📊 <b>{ch.title}</b> — To'liq Statistika\n",
+        f"👥 Obunachílar: <b>{_fmt_subs(ch.subscriber_count)}</b>",
+        f"👁 Jami ko'rishlar: <b>{_fmt_subs(ch.view_count)}</b>",
+        f"🎥 Videolar soni: <b>{ch.video_count}</b>",
+        f"📊 O'rtacha ko'rish/video: <b>{_fmt_subs(views_per_vid)}</b>",
+    ]
+    if ch.country and ch.country != "—":
+        lines.append(f"🌍 Mamlakat: <b>{ch.country}</b>")
+
+    if ch.recent_videos:
+        lines += ["", "🕐 <b>So'nggi videolar:</b>"]
+        for i, v in enumerate(ch.recent_videos, 1):
+            t = v["title"] + ("…" if len(v["title"]) >= 50 else "")
+            extra = ""
+            if v.get("view_count"):
+                extra += f" · 👁 {v['view_count']}"
+            if v.get("duration") and v["duration"] != "0:00":
+                extra += f" · ⏱ {v['duration']}"
+            lines.append(f"  {i}. {t}{extra}")
+
     builder = InlineKeyboardBuilder()
-    for label, url in [
-        ("📊 SocialBlade",    "https://socialblade.com/youtube/"),
-        ("🔍 Noxinfluencer",  "https://www.noxinfluencer.com/youtube/"),
-        ("🎯 vidIQ",          "https://vidiq.com/"),
-        ("🔧 TubeBuddy",      "https://www.tubebuddy.com/"),
-        ("📈 YouTube Studio", "https://studio.youtube.com/"),
-        ("📉 Google Trends",  "https://trends.google.com/"),
-    ]:
-        builder.button(text=label, url=url)
+    builder.button(text="📺 YouTube'da ochish", url=ch.channel_url)
     builder.adjust(1)
     add_nav_row(builder, current="ca:statistics", parent="menu:channel_analyzer")
 
-    await callback.message.edit_text(  # type: ignore[union-attr]
-        "📊 <b>Statistika Asboblari</b>\n\n"
-        "Kanal statistikasi uchun professional asboblar:",
-        reply_markup=builder.as_markup(),
-    )
-    await callback.answer()
+    await wait_msg.edit_text("\n".join(lines), reply_markup=builder.as_markup())
