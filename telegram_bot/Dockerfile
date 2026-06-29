@@ -1,4 +1,4 @@
-# ---- AI YouTube Factory: Telegram bot ----
+# ---- Telegram Bot ----
 FROM python:3.12-slim
 
 ENV PYTHONUNBUFFERED=1 \
@@ -7,11 +7,16 @@ ENV PYTHONUNBUFFERED=1 \
 
 WORKDIR /app
 
-COPY pyproject.toml ./
+# Install dependencies first (cached layer)
+COPY telegram_bot/requirements.txt ./
+RUN pip install --upgrade pip && pip install -r requirements.txt
+
+# Copy source code
 COPY factory ./factory
 COPY telegram_bot ./telegram_bot
 
-RUN pip install --upgrade pip && pip install -e .
+# Add factory and telegram_bot to Python path
+ENV PYTHONPATH=/app
 
 RUN useradd -m -u 10003 app && chown -R app:app /app
 USER app
