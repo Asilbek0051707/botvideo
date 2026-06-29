@@ -35,6 +35,13 @@ _ITEMS: list[tuple[str, str]] = [
     ("🖌 Thumbnail Assets", "mat:thumb"),
     ("🎨 AI Prompts",       "mat:prompts"),
     ("📂 Material Packs",   "mat:pack"),
+    # STEP 7 — new asset types
+    ("📱 CapCut Resources", "mat:capcut"),
+    ("🎬 Premiere Pro",     "mat:premiere"),
+    ("🎞 After Effects",    "mat:ae"),
+    # STEP 7 — library features (handled by material_library router)
+    ("⭐ Sevimlilar",       "mat:fav"),
+    ("🗂 Saqlangan",        "mat:saved"),
     ("🌐 Internet Search",  "mat:search"),
 ]
 
@@ -53,8 +60,11 @@ _MAT_HINT: dict[str, str] = {
     "mat:fx":     "Masalan: <code>fire explosion effect</code>",
     "mat:thumb":  "Masalan: <code>Spider-Man thumbnail</code>",
     "mat:prompts":"Masalan: <code>Spider-Man Midjourney prompt</code>",
-    "mat:pack":   "Masalan: <code>cartoon character pack</code>",
-    "mat:search": "Nima qidiryapsiz?",
+    "mat:pack":    "Masalan: <code>cartoon character pack</code>",
+    "mat:capcut":  "Masalan: <code>CapCut transition effects</code>",
+    "mat:premiere":"Masalan: <code>Premiere Pro sound pack</code>",
+    "mat:ae":      "Masalan: <code>After Effects motion blur preset</code>",
+    "mat:search":  "Nima qidiryapsiz?",
 }
 
 

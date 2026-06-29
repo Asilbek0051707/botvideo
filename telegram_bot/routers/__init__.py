@@ -10,6 +10,7 @@ from telegram_bot.routers import (
     characters,
     dashboard,
     favorites,
+    material_library,
     materials,
     projects,
     search_router,
@@ -30,6 +31,7 @@ def register_routers(dp: Dispatcher) -> None:
     dp.include_router(dashboard.router)
     dp.include_router(trends.router)
     dp.include_router(characters.router)
+    dp.include_router(material_library.router)  # must be before materials.router
     dp.include_router(materials.router)
     # Trend Analyzer + sub-routers (order matters: sub-routers first)
     dp.include_router(video_ideas.router)
