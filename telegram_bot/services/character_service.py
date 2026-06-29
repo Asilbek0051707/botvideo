@@ -84,17 +84,33 @@ class CharacterService:
 
     # ── search ───────────────────────────────────────────────────
 
+    # Flat index: (cat, char, pre-lowercased searchable string).
+    # Built once on first search call — O(1) for all subsequent searches.
+    _flat_index: list[tuple[CategoryData, CharacterData, str]] = []
+
+    def _ensure_index(self) -> None:
+        if self._flat_index:
+            return
+        for cat in self.get_categories():
+            for char in self.get_characters(cat.id):
+                # Combine all searchable fields into one lowercased string once.
+                blob = " ".join(
+                    [char.name] + list(char.aliases) + list(char.tags)
+                ).lower()
+                self._flat_index.append((cat, char, blob))
+
     def search(
         self, query: str, limit: int = 20
     ) -> list[tuple[CategoryData, CharacterData]]:
-        """Full-text search across all categories."""
+        """Full-text search across all categories using a pre-built flat index."""
+        self._ensure_index()
+        q = query.lower()
         results: list[tuple[CategoryData, CharacterData]] = []
-        for cat in self.get_categories():
-            for char in self.get_characters(cat.id):
-                if char.matches(query):
-                    results.append((cat, char))
-                    if len(results) >= limit:
-                        return results
+        for cat, char, blob in self._flat_index:
+            if q in blob:
+                results.append((cat, char))
+                if len(results) >= limit:
+                    break
         return results
 
     # ── private loaders ──────────────────────────────────────────

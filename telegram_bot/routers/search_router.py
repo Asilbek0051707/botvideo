@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import asyncio
+
 from aiogram import F, Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
@@ -52,7 +54,7 @@ async def on_search_query(message: Message, state: FSMContext) -> None:
         await message.answer("❌ Empty query. Use /search to try again.")
         return
 
-    results = char_service.search(query, limit=15)
+    results = await asyncio.to_thread(char_service.search, query, 15)
 
     if not results:
         await message.answer(

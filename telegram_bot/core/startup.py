@@ -27,6 +27,23 @@ async def on_startup(bot: Bot) -> None:
     except Exception as exc:
         log.warning("telegram.keywords_seed_failed", error=str(exc))
 
+    # Pre-build character search index (274 chars → flat blob, ~2ms once)
+    try:
+        import asyncio as _asyncio
+        from telegram_bot.services.character_service import char_service
+        await _asyncio.to_thread(char_service._ensure_index)
+        log.info("telegram.search_index_ready")
+    except Exception as exc:
+        log.warning("telegram.search_index_failed", error=str(exc))
+
+    # Seed built-in automation workflow templates (idempotent)
+    try:
+        from telegram_bot.services.automation_service import seed_workflows
+        await seed_workflows()
+        log.info("telegram.workflows_seeded")
+    except Exception as exc:
+        log.warning("telegram.workflows_seed_failed", error=str(exc))
+
     me = await bot.get_me()
     log.info(
         "telegram.started",
