@@ -6,6 +6,7 @@ from aiogram import Dispatcher
 
 from telegram_bot.routers import (
     ai_generator,
+    automation,
     channel_analyzer,
     characters,
     dashboard,
@@ -44,6 +45,7 @@ def register_routers(dp: Dispatcher) -> None:
     dp.include_router(ai_generator.router)
     dp.include_router(projects.router)
     dp.include_router(statistics.router)
+    dp.include_router(automation.router)       # handles menu:auto
     dp.include_router(integrations.router)     # handles menu:integrations + set:integrations
     dp.include_router(settings_router.router)
     dp.include_router(favorites.router)

@@ -34,5 +34,6 @@ def init_db() -> None:
     from telegram_bot.db import material_models      # noqa: F401 — registers Asset, AssetCollection, CollectionAsset, SearchHistory, PromptTemplate
     from telegram_bot.db import project_models       # noqa: F401 — registers ProjectMeta, ProjectTask, ProjectNote, ProjectResource
     from telegram_bot.db import integration_models  # noqa: F401 — registers ProviderStatus, SyncHistory, CacheEntry, ProviderLog
+    from telegram_bot.db import automation_models   # noqa: F401 — registers AutomationRun, WorkflowTemplate, AutomationPackage, AssistantConversation, AutomationSettings
 
     Base.metadata.create_all(bind=engine)
