@@ -16,6 +16,7 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import (
     BufferedInputFile, CallbackQuery, InputMediaPhoto, Message,
 )
+# BufferedInputFile is still used for audio/video downloads below
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from telegram_bot.keyboards.navigation import get_nav_keyboard
@@ -30,25 +31,39 @@ class VideoKitStates(StatesGroup):
 # ── image albums ───────────────────────────────────────────────────
 
 async def _send_image_album(message: Message, results: list, label: str, ext: str = "png") -> int:
-    from telegram_bot.services.real_search import download_images
+    """Send images by URL — Telegram fetches them directly, no download needed."""
     if not results:
         return 0
-    photos = await download_images(results, limit=len(results))
-    if not photos:
-        return 0
-    media = []
-    for i, (data, _) in enumerate(photos):
-        cap = label if i == 0 else None
-        media.append(InputMediaPhoto(
-            media=BufferedInputFile(data, filename=f"img_{i}.{ext}"),
-            caption=cap,
+    media = [
+        InputMediaPhoto(
+            media=r.url,
+            caption=label if i == 0 else None,
             parse_mode="HTML",
-        ))
-    await message.answer_media_group(media)
-    return len(photos)
+        )
+        for i, r in enumerate(results[:4])
+    ]
+    if not media:
+        return 0
+    try:
+        await message.answer_media_group(media)
+        return len(media)
+    except Exception:
+        # If Telegram can't fetch the URL, send links as text fallback
+        lines = [label]
+        for r in results[:4]:
+            lines.append(f"• <a href='{r.url}'>{r.title[:60]}</a>")
+        try:
+            await message.answer("\n".join(lines))
+        except Exception:
+            pass
+        return 0
 
 
 # ── audio download & send ──────────────────────────────────────────
+
+_AUDIO_TIMEOUT = 60   # yt-dlp audio download max seconds
+_VIDEO_TIMEOUT = 90   # yt-dlp video download max seconds
+
 
 async def _download_and_send_audio(
     message: Message,
@@ -57,19 +72,27 @@ async def _download_and_send_audio(
     performer: str = "",
 ) -> bool:
     from telegram_bot.services.real_search import download_yt_audio
-    result = await download_yt_audio(url)
+    try:
+        result = await asyncio.wait_for(download_yt_audio(url), timeout=_AUDIO_TIMEOUT)
+    except asyncio.TimeoutError:
+        return False
+    except Exception:
+        return False
     if not result:
         return False
     data, actual_title = result
     short_title = (actual_title or title)[:60]
-    ext = "mp3" if data[:3] == b"ID3" or data[:4] == b"\xff\xfb" or data[:4] == b"\xff\xf3" else "m4a"
-    await message.answer_audio(
-        audio=BufferedInputFile(data, filename=f"{short_title[:40]}.{ext}"),
-        title=short_title,
-        performer=performer or "YouTube",
-        caption=f"🎵 {short_title}",
-    )
-    return True
+    ext = "mp3" if data[:3] == b"ID3" or data[:4] in (b"\xff\xfb", b"\xff\xf3") else "m4a"
+    try:
+        await message.answer_audio(
+            audio=BufferedInputFile(data, filename=f"{short_title[:40]}.{ext}"),
+            title=short_title,
+            performer=performer or "YouTube",
+            caption=f"🎵 {short_title}",
+        )
+        return True
+    except Exception:
+        return False
 
 
 # ── video download & send ──────────────────────────────────────────
@@ -80,18 +103,25 @@ async def _download_and_send_video(
     title: str,
 ) -> bool:
     from telegram_bot.services.real_search import download_yt_video
-    result = await download_yt_video(url, max_mb=45)
+    try:
+        result = await asyncio.wait_for(download_yt_video(url, max_mb=45), timeout=_VIDEO_TIMEOUT)
+    except asyncio.TimeoutError:
+        return False
+    except Exception:
+        return False
     if not result:
         return False
     data, actual_title = result
     short = (actual_title or title)[:50]
-    ext = "mp4"
-    await message.answer_video(
-        video=BufferedInputFile(data, filename=f"{short[:40]}.{ext}"),
-        caption=f"🟢 {short}",
-        supports_streaming=True,
-    )
-    return True
+    try:
+        await message.answer_video(
+            video=BufferedInputFile(data, filename=f"{short[:40]}.mp4"),
+            caption=f"🟢 {short}",
+            supports_streaming=True,
+        )
+        return True
+    except Exception:
+        return False
 
 
 # ── main kit delivery ──────────────────────────────────────────────
@@ -117,7 +147,7 @@ async def _deliver_kit(message: Message, query: str, back_cb: str, user_id: int 
 
     await status.edit_text(
         f"📦 <b>{query}</b>\n\n"
-        "✅ Qidiruv tugadi. Fayllar yuklanmoqda...\n"
+        "✅ Qidiruv tugadi.\n"
         "🖼 Rasmlar jo'natilmoqda..."
     )
 
@@ -126,14 +156,16 @@ async def _deliver_kit(message: Message, query: str, back_cb: str, user_id: int 
         "gs": 0, "mus": 0, "sfx": 0,
     }
 
-    # ── 1. PNG images ──
-    counts["png"] = await _send_image_album(message, png_r, "🖼 <b>PNG Rasmlar</b>", "png")
-
-    # ── 2. Backgrounds ──
-    counts["bg"] = await _send_image_album(message, bg_r, "🌄 <b>Backgroundlar</b>", "jpg")
-
-    # ── 3. GIF ──
-    counts["gif"] = await _send_image_album(message, gif_r, "🎞 <b>GIF / Animatsiyalar</b>", "gif")
+    # ── 1-3. Images — all three albums sent in parallel (URLs, no download) ──
+    results_img = await asyncio.gather(
+        _send_image_album(message, png_r, "🖼 <b>PNG Rasmlar</b>", "png"),
+        _send_image_album(message, bg_r,  "🌄 <b>Backgroundlar</b>", "jpg"),
+        _send_image_album(message, gif_r, "🎞 <b>GIF / Animatsiyalar</b>", "gif"),
+        return_exceptions=True,
+    )
+    counts["png"] = results_img[0] if isinstance(results_img[0], int) else 0
+    counts["bg"]  = results_img[1] if isinstance(results_img[1], int) else 0
+    counts["gif"] = results_img[2] if isinstance(results_img[2], int) else 0
 
     await status.edit_text(
         f"📦 <b>{query}</b>\n\n"
