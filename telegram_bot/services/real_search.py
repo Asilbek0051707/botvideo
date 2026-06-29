@@ -356,8 +356,11 @@ def _yt_search_sync(query: str, limit: int) -> list[RealResult]:
     """Fetch limit*2 YouTube results so callers can pick a personalised subset."""
     try:
         import yt_dlp  # type: ignore
-        opts = {"quiet": True, "no_warnings": True,
-                "extract_flat": True, "skip_download": True}
+        opts = {
+            "quiet": True, "no_warnings": True,
+            "extract_flat": True, "skip_download": True,
+            "socket_timeout": 8,   # abort if server doesn't respond in 8s
+        }
         with yt_dlp.YoutubeDL(opts) as ydl:
             data = ydl.extract_info(f"ytsearch{limit * 2}:{query}", download=False)
         results = []

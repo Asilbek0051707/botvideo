@@ -45,10 +45,10 @@ async def _send_image_album(message: Message, results: list, label: str, ext: st
     if not media:
         return 0
     try:
-        await message.answer_media_group(media)
+        await asyncio.wait_for(message.answer_media_group(media), timeout=20)
         return len(media)
     except Exception:
-        # If Telegram can't fetch the URL, send links as text fallback
+        # Telegram couldn't fetch URLs — send as clickable links instead
         lines = [label]
         for r in results[:4]:
             lines.append(f"• <a href='{r.url}'>{r.title[:60]}</a>")
@@ -126,23 +126,30 @@ async def _download_and_send_video(
 
 # ── main kit delivery ──────────────────────────────────────────────
 
+async def _safe_search(coro, timeout: float = 15.0) -> list:
+    """Run a search coroutine with a hard timeout — never hangs."""
+    try:
+        return await asyncio.wait_for(coro, timeout=timeout)
+    except Exception:
+        return []
+
+
 async def _deliver_kit(message: Message, query: str, back_cb: str, user_id: int = 0) -> None:
     from telegram_bot.services.real_search import search_for_material, search_youtube
 
     status = await message.answer(
-        f"📦 <b>{query}</b> uchun materiallar yuklanmoqda...\n\n"
-        "⏳ Bu 30–60 soniya davom etadi. Iltimos kuting...\n\n"
-        "🔍 Qidirilmoqda..."
+        f"📦 <b>{query}</b>\n\n"
+        "🔍 Qidirilmoqda... (15s max)"
     )
 
-    # ── parallel search for all types (personalised by user_id) ──
-    (png_r, bg_r, gif_r, gs_r, mus_r, sfx_r) = await asyncio.gather(
-        search_for_material(query, "png",  limit=3, user_id=user_id),
-        search_for_material(query, "bg",   limit=3, user_id=user_id),
-        search_for_material(query, "gif",  limit=3, user_id=user_id),
-        search_youtube(f"{query} green screen free download", limit=2, user_id=user_id),
-        search_youtube(f"{query} background music no copyright free", limit=3, user_id=user_id),
-        search_youtube(f"{query} sound effect free", limit=3, user_id=user_id),
+    # ── parallel search — each limited to 15s, never hangs ──
+    png_r, bg_r, gif_r, gs_r, mus_r, sfx_r = await asyncio.gather(
+        _safe_search(search_for_material(query, "png", limit=3, user_id=user_id)),
+        _safe_search(search_for_material(query, "bg",  limit=3, user_id=user_id)),
+        _safe_search(search_for_material(query, "gif", limit=3, user_id=user_id)),
+        _safe_search(search_youtube(f"{query} green screen free download",         limit=2, user_id=user_id)),
+        _safe_search(search_youtube(f"{query} background music no copyright free", limit=3, user_id=user_id)),
+        _safe_search(search_youtube(f"{query} sound effect free",                  limit=3, user_id=user_id)),
     )
 
     await status.edit_text(
