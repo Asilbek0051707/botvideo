@@ -32,6 +32,7 @@ def init_db() -> None:
     from telegram_bot.db import channel_models       # noqa: F401 — registers ChannelRecord, VideoRecord, CompetitorRecord, AnalysisReport, SEORecord, GrowthSnapshot
     from telegram_bot.db import ai_generator_models  # noqa: F401 — registers GeneratedContent, AITemplate, ContentPackage
     from telegram_bot.db import material_models      # noqa: F401 — registers Asset, AssetCollection, CollectionAsset, SearchHistory, PromptTemplate
-    from telegram_bot.db import project_models      # noqa: F401 — registers ProjectMeta, ProjectTask, ProjectNote, ProjectResource
+    from telegram_bot.db import project_models       # noqa: F401 — registers ProjectMeta, ProjectTask, ProjectNote, ProjectResource
+    from telegram_bot.db import integration_models  # noqa: F401 — registers ProviderStatus, SyncHistory, CacheEntry, ProviderLog
 
     Base.metadata.create_all(bind=engine)

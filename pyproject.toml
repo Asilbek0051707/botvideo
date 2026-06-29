@@ -89,6 +89,7 @@ packages = [
   "telegram_bot.utils",
   "telegram_bot.services",
   "telegram_bot.services.providers",
+  "telegram_bot.services.integrations",
   "telegram_bot.db",
 ]
 

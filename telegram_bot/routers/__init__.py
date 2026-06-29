@@ -10,6 +10,7 @@ from telegram_bot.routers import (
     characters,
     dashboard,
     favorites,
+    integrations,
     material_library,
     materials,
     project_workspace,
@@ -43,6 +44,7 @@ def register_routers(dp: Dispatcher) -> None:
     dp.include_router(ai_generator.router)
     dp.include_router(projects.router)
     dp.include_router(statistics.router)
+    dp.include_router(integrations.router)     # handles menu:integrations + set:integrations
     dp.include_router(settings_router.router)
     dp.include_router(favorites.router)
     dp.include_router(video_kit.router)

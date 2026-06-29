@@ -18,8 +18,9 @@ _ITEMS: list[tuple[str, str]] = [
     ("🚂 Railway",  "set:railway"),
     ("🐙 GitHub",   "set:github"),
     ("📄 Logs",     "set:logs"),
-    ("♻ Cache",    "set:cache"),
-    ("ℹ About",    "set:about"),
+    ("♻ Cache",        "set:cache"),
+    ("🔌 Integrations","set:integrations"),
+    ("ℹ About",        "set:about"),
 ]
 
 _LABEL: dict[str, str] = {data: label for label, data in _ITEMS}
