@@ -12,6 +12,7 @@ from telegram_bot.routers import (
     favorites,
     material_library,
     materials,
+    project_workspace,
     projects,
     search_router,
     settings_router,
@@ -37,6 +38,7 @@ def register_routers(dp: Dispatcher) -> None:
     dp.include_router(video_ideas.router)
     dp.include_router(trend_keywords.router)
     dp.include_router(trend_analyzer.router)
+    dp.include_router(project_workspace.router)  # must be before projects.router
     dp.include_router(channel_analyzer.router)
     dp.include_router(ai_generator.router)
     dp.include_router(projects.router)
