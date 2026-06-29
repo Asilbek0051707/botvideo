@@ -30,5 +30,6 @@ def init_db() -> None:
     from telegram_bot.db.models import Base          # noqa: F401 — registers Project, Favourite
     from telegram_bot.db import trend_models         # noqa: F401 — registers Trend, TrendKeyword, VideoIdea, TrendSettings
     from telegram_bot.db import channel_models       # noqa: F401 — registers ChannelRecord, VideoRecord, CompetitorRecord, AnalysisReport, SEORecord, GrowthSnapshot
+    from telegram_bot.db import ai_generator_models  # noqa: F401 — registers GeneratedContent, AITemplate, ContentPackage
 
     Base.metadata.create_all(bind=engine)
