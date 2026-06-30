@@ -2,11 +2,9 @@
 
 Delivery strategy:
   Images (PNG/BG/GIF) → media albums via URL  (Telegram fetches, ~instant)
-  Green Screen        → YouTube link          (no download, instant)
+  Green Screen        → mp4 file download 360p, fallback to link  (60s timeout)
   Music               → YouTube links         (no download, instant)
-  SFX                 → YouTube links         (no download, instant)
-
-Total time: ~15s (search) + ~5s (send) = done in ≤25s, never hangs.
+  SFX                 → audio file download, fallback to link      (45s timeout)
 """
 
 from __future__ import annotations
@@ -82,6 +80,130 @@ async def _send_yt_links(message: Message, results: list, label: str) -> int:
         return 0
 
 
+def _dl_sfx_sync(url: str) -> tuple[bytes, str] | None:
+    """Download SFX audio (low quality, socket_timeout=8s). Runs in thread."""
+    import os, tempfile
+    import yt_dlp  # type: ignore
+    with tempfile.TemporaryDirectory() as tmp:
+        opts = {
+            "format": "bestaudio[abr<=128]/bestaudio/worst",
+            "outtmpl": f"{tmp}/%(id)s.%(ext)s",
+            "quiet": True, "no_warnings": True,
+            "socket_timeout": 8,
+        }
+        try:
+            with yt_dlp.YoutubeDL(opts) as ydl:
+                info = ydl.extract_info(url, download=True) or {}
+            title = info.get("title", "sfx")
+            for fname in os.listdir(tmp):
+                path = os.path.join(tmp, fname)
+                size = os.path.getsize(path)
+                if 1_000 < size <= 20 * 1024 * 1024:
+                    with open(path, "rb") as fp:
+                        return fp.read(), title
+        except Exception:
+            pass
+    return None
+
+
+def _dl_gs_sync(url: str) -> tuple[bytes, str] | None:
+    """Download Green Screen video at 360p (socket_timeout=10s). Runs in thread."""
+    import os, tempfile
+    import yt_dlp  # type: ignore
+    with tempfile.TemporaryDirectory() as tmp:
+        opts = {
+            "format": "best[height<=360][ext=mp4]/best[height<=360]/worst",
+            "outtmpl": f"{tmp}/%(id)s.%(ext)s",
+            "quiet": True, "no_warnings": True,
+            "socket_timeout": 10,
+        }
+        try:
+            with yt_dlp.YoutubeDL(opts) as ydl:
+                info = ydl.extract_info(url, download=True) or {}
+            title = info.get("title", "green_screen")
+            for fname in os.listdir(tmp):
+                path = os.path.join(tmp, fname)
+                size = os.path.getsize(path)
+                if 10_000 < size <= 45 * 1024 * 1024:
+                    with open(path, "rb") as fp:
+                        return fp.read(), title
+        except Exception:
+            pass
+    return None
+
+
+async def _send_sfx_files(message: Message, results: list, label: str) -> int:
+    """Download SFX as audio files (45s timeout each). Fallback to links."""
+    if not results:
+        return 0
+    sent = 0
+    fallback = []
+    for r in results[:3]:
+        try:
+            data = await asyncio.wait_for(
+                asyncio.to_thread(_dl_sfx_sync, r.url), timeout=45
+            )
+            if data:
+                audio_bytes, title = data
+                ext = "mp3" if not title.endswith(".ogg") else "ogg"
+                f = BufferedInputFile(audio_bytes, filename=f"{title[:40]}.{ext}")
+                await asyncio.wait_for(
+                    message.answer_audio(f, caption=f"🔊 <b>{title[:60]}</b>", parse_mode="HTML"),
+                    timeout=20,
+                )
+                sent += 1
+                continue
+        except Exception:
+            pass
+        fallback.append(r)
+    if fallback:
+        lines = [label]
+        for r in fallback:
+            lines.append(f"▶ <a href='{r.url}'>{r.title[:60]}</a>")
+        try:
+            await message.answer("\n".join(lines))
+        except Exception:
+            pass
+    return sent + len(fallback)
+
+
+async def _send_gs_videos(message: Message, results: list, label: str) -> int:
+    """Download Green Screen as 360p mp4 files (60s timeout each). Fallback to links."""
+    if not results:
+        return 0
+    sent = 0
+    fallback = []
+    for r in results[:2]:
+        try:
+            data = await asyncio.wait_for(
+                asyncio.to_thread(_dl_gs_sync, r.url), timeout=60
+            )
+            if data:
+                video_bytes, title = data
+                f = BufferedInputFile(video_bytes, filename=f"{title[:40]}.mp4")
+                await asyncio.wait_for(
+                    message.answer_video(f, caption=f"🟢 <b>{title[:60]}</b>", parse_mode="HTML"),
+                    timeout=30,
+                )
+                sent += 1
+                continue
+        except Exception:
+            pass
+        fallback.append(r)
+    # remaining results always as links
+    for r in results[2:]:
+        fallback.append(r)
+    if fallback:
+        lines = [label]
+        for r in fallback:
+            lines.append(f"▶ <a href='{r.url}'>{r.title[:60]}</a>")
+        try:
+            await message.answer("\n".join(lines))
+        except Exception:
+            pass
+    return sent + len(fallback)
+
+
 # ── main kit delivery ──────────────────────────────────────────────
 
 async def _deliver_kit(message: Message, query: str, back_cb: str, user_id: int = 0) -> None:
@@ -121,11 +243,11 @@ async def _deliver_kit(message: Message, query: str, back_cb: str, user_id: int 
     counts["bg"]  = img_results[1] if isinstance(img_results[1], int) else 0
     counts["gif"] = img_results[2] if isinstance(img_results[2], int) else 0
 
-    # ── 3. Send YT links for video/music/sfx (instant, no download) ──
+    # ── 3. GS/SFX as files (with fallback to links), music as links ──
     yt_results = await asyncio.gather(
-        _send_yt_links(message, gs_r,  "🟢 <b>Green Screen videolar:</b>"),
-        _send_yt_links(message, mus_r, "🎵 <b>Musiqa (no copyright):</b>"),
-        _send_yt_links(message, sfx_r, "🔊 <b>Sound Effects:</b>"),
+        _send_gs_videos(message, gs_r,  "🟢 <b>Green Screen videolar:</b>"),
+        _send_yt_links(message, mus_r,  "🎵 <b>Musiqa (no copyright):</b>"),
+        _send_sfx_files(message, sfx_r, "🔊 <b>Sound Effects:</b>"),
         return_exceptions=True,
     )
     counts["gs"]  = yt_results[0] if isinstance(yt_results[0], int) else 0
